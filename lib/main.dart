@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wallgram/pages/home_page.dart';
+import 'package:wallgram/pages/login_page.dart';
+import 'package:wallgram/pages/register_page.dart';
 import 'package:wallgram/themes/theme_provider.dart';
 
 void main() {
@@ -18,8 +19,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: Provider.of<ThemeProvider>(context).themeData, // ..,
-      home: HomePage(),
+      routes: {
+        LoginPage.routeName: (context) => const LoginPage(),
+        RegistierPage.routeName: (context) => const RegistierPage(),
+      },
+      theme: Provider.of<ThemeProvider>(context).themeData, //
+      home: LoginPage(),
       debugShowCheckedModeBanner: false,
     );
   }
