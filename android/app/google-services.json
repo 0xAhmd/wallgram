@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "755663071671",
+    "project_id": "wallgram-4a6e0",
+    "storage_bucket": "wallgram-4a6e0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:755663071671:android:5ffe24ca268309ff25e032",
+        "android_client_info": {
+          "package_name": "com.example.wallgram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9TLJ-3n8TPi2lhf-d0X2VJ7w8VQh9TVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
