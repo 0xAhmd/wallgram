@@ -37,12 +37,27 @@ class DatabaseService {
 
   Future<UserProfile?> getUserFromFirebase(String uid) async {
     try {
-      DocumentSnapshot userDoc = await _db.collection("Users").doc(uid).get();
+      DocumentSnapshot userDoc = await _db.collection("users").doc(uid).get();
 
       return UserProfile.fromDocument(userDoc);
     } catch (e) {
       print(e.toString());
       return null;
+    }
+  }
+
+  Future<void> updateUserBio(String uid, String bio) async {
+    try {
+      print('Updating bio for uid: $uid');
+      print('New bio: $bio');
+
+      // Firestore update
+      await _db.collection('users').doc(uid).update({'bio': bio});
+      print('Waiting for Firestore to update...');
+      await Future.delayed(Duration(seconds: 1));
+      print('Bio updated successfully');
+    } catch (e) {
+      print('Error updating bio: $e');
     }
   }
 }
