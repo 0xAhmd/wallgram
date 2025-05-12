@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/custom_text_field.dart';
+import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/pages/register_page.dart';
 import 'package:wallgram/services/auth_service.dart';
@@ -18,8 +19,10 @@ class _LoginPageState extends State<LoginPage> {
   final _auth = AuthService();
 
   void login() async {
+    showLoadingIndicator(context);
     try {
       await _auth.loginService(_emailController.text, _passwordController.text);
+      if (mounted) hideLoadingIndicator(context);
     } catch (e) {
       print(e.toString());
     }
