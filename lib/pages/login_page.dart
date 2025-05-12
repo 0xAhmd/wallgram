@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/pages/register_page.dart';
+import 'package:wallgram/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +15,16 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final _auth = AuthService();
+
+  void login() async {
+    try {
+      await _auth.loginService(_emailController.text, _passwordController.text);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,12 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 25),
-                MyCustomButton(
-                  text: 'Login',
-                  onPressed: () {
-                    // Handle login logic
-                  },
-                ),
+                MyCustomButton(text: 'Login', onPressed: login),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
