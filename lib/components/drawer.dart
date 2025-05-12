@@ -54,7 +54,7 @@ class MyDrawer extends StatelessWidget {
                 },
               ),
               DrawerListTile(
-                icon: Icons.settings,
+                icon: Icons.person,
                 title: 'P R O F I L E',
                 onTap: () {
                   Navigator.pop(context);
