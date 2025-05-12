@@ -27,26 +27,29 @@ class _RegistierPageState extends State<RegistierPage> {
     if (_passwordController.text == _confirmPasswordController.text) {
       showLoadingIndicator(context);
       try {
+        // 1. Register user with Firebase Auth
         await _auth.registerService(
           _emailController.text,
           _passwordController.text,
         );
 
+        // 2. Save user data to Firestore FIRST
+        await _db.saveUserInfoInFirebase(
+          name:
+              _usernameController.text, // Use controller values BEFORE clearing
+          email: _emailController.text,
+        );
+
+        // 3. Post-registration cleanup
         if (mounted) {
           hideLoadingIndicator(context);
-
-          // Clear all text fields
+          // Clear controllers AFTER saving data
           _emailController.clear();
           _passwordController.clear();
           _confirmPasswordController.clear();
           _usernameController.clear();
-
-          // Navigate to login page and remove current page from stack
+          // Navigate to login page
           Navigator.pushReplacementNamed(context, LoginPage.routeName);
-          await _db.saveUserInfoInFirebase(
-            name: _usernameController.text,
-            email: _emailController.text,
-          );
         }
       } catch (e) {
         if (mounted) hideLoadingIndicator(context);

@@ -16,7 +16,7 @@ class MyBioBox extends StatelessWidget {
         text,
         style: TextStyle(
           color: Theme.of(context).colorScheme.inversePrimary,
-          fontSize: 18,
+          fontSize: 17,
         ),
       ),
     );

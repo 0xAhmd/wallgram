@@ -19,7 +19,7 @@ class MyCustomButton extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.black,
+              color: Theme.of(context).colorScheme.inversePrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
