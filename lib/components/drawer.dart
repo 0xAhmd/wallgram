@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/drawer_list_tile.dart';
+import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/pages/settings_page.dart';
-import 'package:wallgram/services/auth_service.dart';
+import 'package:wallgram/services/auth/auth_service.dart';
 
 class MyDrawer extends StatelessWidget {
   MyDrawer({super.key});
 
   final authService = AuthService();
-  void logoutUser() async {
+  void logoutUser(BuildContext context) async {
     await authService.logoutUser();
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      LoginPage.routeName,
+      (route) => false,
+    );
   }
 
   @override
@@ -50,7 +56,9 @@ class MyDrawer extends StatelessWidget {
               DrawerListTile(
                 icon: Icons.logout,
                 title: 'L O G O U T',
-                onTap: logoutUser,
+                onTap:  () {
+                  logoutUser(context);
+                }
               ),
             ],
           ),

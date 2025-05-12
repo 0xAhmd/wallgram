@@ -3,7 +3,7 @@ import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/pages/login_page.dart';
-import 'package:wallgram/services/auth_service.dart';
+import 'package:wallgram/services/auth/auth_service.dart';
 
 class RegistierPage extends StatefulWidget {
   const RegistierPage({super.key});
@@ -29,11 +29,22 @@ class _RegistierPageState extends State<RegistierPage> {
           _emailController.text,
           _passwordController.text,
         );
-        if (mounted) hideLoadingIndicator(context);
+
+        if (mounted) {
+          hideLoadingIndicator(context);
+
+          // Clear all text fields
+          _emailController.clear();
+          _passwordController.clear();
+          _confirmPasswordController.clear();
+          _usernameController.clear();
+
+          // Navigate to login page and remove current page from stack
+          Navigator.pushReplacementNamed(context, LoginPage.routeName);
+        }
       } catch (e) {
         if (mounted) hideLoadingIndicator(context);
 
-        // Show error message using SnackBar
         String errorMessage = 'An unexpected error occurred';
         if (e.toString().contains('Invalid email')) {
           errorMessage = 'The email address is invalid.';
@@ -54,7 +65,6 @@ class _RegistierPageState extends State<RegistierPage> {
         );
       }
     } else {
-      // Hide keyboard if the registration failed due to password mismatch
       FocusManager.instance.primaryFocus?.unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
