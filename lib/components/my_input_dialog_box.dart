@@ -25,9 +25,10 @@ class MyInputDialogBox extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
+            // Call onPressed first to process the input before clearing
+            onPressed!();
             Navigator.pop(context);
             controller.clear();
-            onPressed!();
           },
           child: Text(onPressedText),
         ),
@@ -36,6 +37,8 @@ class MyInputDialogBox extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
 
       content: TextField(
+        controller: controller,
+
         decoration: InputDecoration(
           counterStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
           fillColor: Theme.of(context).colorScheme.secondary,
@@ -56,7 +59,6 @@ class MyInputDialogBox extends StatelessWidget {
             ),
           ),
         ),
-        controller: controller,
         maxLines: 3,
         maxLength: 140,
       ),
