@@ -33,13 +33,17 @@ class _ProfilePageState extends State<ProfilePage> {
       listen: false,
     );
     user = await databaseProvider.userProfile(widget.uid);
-    print('User loaded: ${user!.bio}'); // Debugging statement
+    // print('User loaded: ${user!.bio}'); // Debugging statement
     setState(() {
       isloading = false;
     });
   }
 
   void _showEditBioBox() {
+    if (user != null) {
+      _bioController.text =
+          user!.bio; // Set current bio as default in the controller
+    }
     showDialog(
       context: context,
       builder:
@@ -52,13 +56,20 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<void> updateBio() async {
-    await DatabaseProvider().updateBio(widget.uid, _bioController.text);
-    await loadUser();
-    setState(() {
-      isloading = false;
-    });
-    print('Bio updated');
+  void updateBio() async {
+    // print(
+    //   'Updated Bio: ${_bioController.text}',
+    // ); // Ensure this has the value the user entered
+    if (_bioController.text.isNotEmpty) {
+      await DatabaseProvider().updateBio(widget.uid, _bioController.text);
+      await loadUser(); // Reload the user data to reflect the changes
+      setState(() {
+        isloading = false;
+      });
+      // print('Bio updated successfully');
+    } else {
+      // print('Bio cannot be empty');
+    }
   }
 
   @override
@@ -103,7 +114,14 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 25),
           GestureDetector(
             onTap: _showEditBioBox,
-            child: MyBioBox(text: isloading ? 'Empty Bio' : user!.bio),
+            child: MyBioBox(
+              text:
+                  isloading
+                      ? 'Loading...'
+                      : user!.bio.isEmpty
+                      ? 'No Bio Set'
+                      : user!.bio,
+            ),
           ),
         ],
       ),

@@ -41,23 +41,23 @@ class DatabaseService {
 
       return UserProfile.fromDocument(userDoc);
     } catch (e) {
-      print(e.toString());
+      // print(e.toString());
       return null;
     }
   }
 
   Future<void> updateUserBio(String uid, String bio) async {
     try {
-      print('Updating bio for uid: $uid');
-      print('New bio: $bio');
+      // print('Updating bio for uid: $uid');
+      // print('New bio: $bio');
 
       // Firestore update
       await _db.collection('users').doc(uid).update({'bio': bio});
-      print('Waiting for Firestore to update...');
+      // print('Waiting for Firestore to update...');
       await Future.delayed(Duration(seconds: 1));
-      print('Bio updated successfully');
+      // print('Bio updated successfully');
     } catch (e) {
-      print('Error updating bio: $e');
+      // print('Error updating bio: $e');
     }
   }
 }
