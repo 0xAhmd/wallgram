@@ -92,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontSize: 18,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              isloading ? '' : '@${user!.name}',
+              isloading ? '' : '@${user!.username}',
             ),
           ),
           const SizedBox(height: 25),
@@ -103,11 +103,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(25),
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              child: Icon(
-                Icons.person,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              child:
+              //  Icon(
+              //   Icons.person,
+              //   size: 100,
+              //   color: Theme.of(context).colorScheme.primary,
+              // ),
+              Image.asset('assets/profile.png', width: 110),
             ),
           ),
 
@@ -123,6 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       : user!.bio,
             ),
           ),
+          
         ],
       ),
     );
