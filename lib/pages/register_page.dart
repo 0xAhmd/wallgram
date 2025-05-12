@@ -4,6 +4,7 @@ import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
+import 'package:wallgram/services/database/database_service.dart';
 
 class RegistierPage extends StatefulWidget {
   const RegistierPage({super.key});
@@ -20,6 +21,7 @@ class _RegistierPageState extends State<RegistierPage> {
       TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final _auth = AuthService();
+  final _db = DatabaseService();
 
   void register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
@@ -41,6 +43,10 @@ class _RegistierPageState extends State<RegistierPage> {
 
           // Navigate to login page and remove current page from stack
           Navigator.pushReplacementNamed(context, LoginPage.routeName);
+          await _db.saveUserInfoInFirebase(
+            name: _usernameController.text,
+            email: _emailController.text,
+          );
         }
       } catch (e) {
         if (mounted) hideLoadingIndicator(context);

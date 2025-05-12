@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/drawer_list_tile.dart';
 import 'package:wallgram/pages/login_page.dart';
+import 'package:wallgram/pages/profile_page.dart';
 import 'package:wallgram/pages/settings_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
 class MyDrawer extends StatelessWidget {
   MyDrawer({super.key});
 
-  final authService = AuthService();
+  final _auth = AuthService();
   void logoutUser(BuildContext context) async {
-    await authService.logoutUser();
+    await _auth.logoutUser();
     Navigator.pushNamedAndRemoveUntil(
       context,
       LoginPage.routeName,
@@ -52,13 +53,27 @@ class MyDrawer extends StatelessWidget {
                   );
                 },
               ),
+              DrawerListTile(
+                icon: Icons.settings,
+                title: 'P R O F I L E',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => ProfilePage(uid: _auth.currentUser.uid),
+                    ),
+                  );
+                },
+              ),
               const Spacer(),
               DrawerListTile(
                 icon: Icons.logout,
                 title: 'L O G O U T',
-                onTap:  () {
+                onTap: () {
                   logoutUser(context);
-                }
+                },
               ),
             ],
           ),
