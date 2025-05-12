@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/drawer_list_tile.dart';
 import 'package:wallgram/pages/settings_page.dart';
+import 'package:wallgram/services/auth_service.dart';
 
 class MyDrawer extends StatelessWidget {
-  const MyDrawer({super.key});
+  MyDrawer({super.key});
+
+  final authService = AuthService();
+  void logoutUser() async {
+    await authService.logoutUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +45,12 @@ class MyDrawer extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+
+              DrawerListTile(
+                icon: Icons.logout,
+                title: 'Logout',
+                onTap: logoutUser,
               ),
             ],
           ),
