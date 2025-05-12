@@ -14,7 +14,7 @@ class AuthService {
   // get an instance from current user
   final _auth = FirebaseAuth.instance;
   // get user from firebase
-  User get user => _auth.currentUser!;
+  User get currentUser => _auth.currentUser!;
   String get id => _auth.currentUser!.uid;
 
   Future<UserCredential> loginService(String email, String password) async {
