@@ -32,14 +32,39 @@ class _RegistierPageState extends State<RegistierPage> {
         if (mounted) hideLoadingIndicator(context);
       } catch (e) {
         if (mounted) hideLoadingIndicator(context);
-        print(e.toString());
+
+        // Show error message using SnackBar
+        String errorMessage = 'An unexpected error occurred';
+        if (e.toString().contains('Invalid email')) {
+          errorMessage = 'The email address is invalid.';
+        } else if (e.toString().contains('Weak password')) {
+          errorMessage = 'The password is too weak.';
+        } else if (e.toString().contains('Email already in use')) {
+          errorMessage = 'This email is already registered.';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } else {
-      // hide keyboard if the login failed due to password not match
+      // Hide keyboard if the registration failed due to password mismatch
       FocusManager.instance.primaryFocus?.unfocus();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Password not match')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Passwords do not match',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
