@@ -46,10 +46,10 @@ class MyDrawer extends StatelessWidget {
                   );
                 },
               ),
-
+              const Spacer(),
               DrawerListTile(
                 icon: Icons.logout,
-                title: 'Logout',
+                title: 'L O G O U T',
                 onTap: logoutUser,
               ),
             ],
