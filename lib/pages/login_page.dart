@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
+import 'package:wallgram/pages/home_page.dart';
 import 'package:wallgram/pages/register_page.dart';
-import 'package:wallgram/services/auth_service.dart';
+import 'package:wallgram/services/auth/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,30 +19,43 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final _auth = AuthService();
 
-  void login() async {
-    showLoadingIndicator(context);
-    try {
-      await _auth.loginService(_emailController.text, _passwordController.text);
-      if (mounted) hideLoadingIndicator(context);
-    } catch (e) {
-      if (mounted) hideLoadingIndicator(context);
-      String errorMessage = 'An unexpected error occurred';
-      if (e.toString().contains('Invalid password')) {
-        errorMessage = 'The password you entered is incorrect.';
-      } else if (e.toString().contains('User not found')) {
-        errorMessage = 'No account found with this email.';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            errorMessage,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
+ void login() async {
+  showLoadingIndicator(context);
+  try {
+    await _auth.loginService(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    if (mounted) {
+      hideLoadingIndicator(context);
+
+      // Clear login fields (optional)
+      _emailController.clear();
+      _passwordController.clear();
+
+      // Navigate to home page
+      Navigator.pushReplacementNamed(context, HomePage.routeName); // Adjust route as needed
     }
+  } catch (e) {
+    if (mounted) hideLoadingIndicator(context);
+
+    String errorMessage = 'An unexpected error occurred';
+    if (e.toString().contains('Invalid password')) {
+      errorMessage = 'The password you entered is incorrect.';
+    } else if (e.toString().contains('User not found')) {
+      errorMessage = 'No account found with this email.';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errorMessage, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
