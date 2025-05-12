@@ -24,7 +24,22 @@ class _LoginPageState extends State<LoginPage> {
       await _auth.loginService(_emailController.text, _passwordController.text);
       if (mounted) hideLoadingIndicator(context);
     } catch (e) {
-      print(e.toString());
+      if (mounted) hideLoadingIndicator(context);
+      String errorMessage = 'An unexpected error occurred';
+      if (e.toString().contains('Invalid password')) {
+        errorMessage = 'The password you entered is incorrect.';
+      } else if (e.toString().contains('User not found')) {
+        errorMessage = 'No account found with this email.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -70,18 +85,16 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 10),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      "Forget Password?",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                  child: Text(
+                    "Forget Password?",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 25),
                 MyCustomButton(text: 'Login', onPressed: login),
                 const SizedBox(height: 20),
