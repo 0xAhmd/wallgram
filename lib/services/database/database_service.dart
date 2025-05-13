@@ -83,8 +83,7 @@ class DatabaseService {
       // Remove 'id' from the map before saving
       Map<String, dynamic> postMap = newPost.toMap();
       await _db.collection('posts').add(postMap); // Firestore generates ID here
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   Future<List<Post>> getAllPostsFromFirebase() async {
@@ -104,7 +103,6 @@ class DatabaseService {
   Future<void> deletPostFromFirebase(String postId) async {
     try {
       await _db.collection('posts').doc(postId).delete();
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 }
