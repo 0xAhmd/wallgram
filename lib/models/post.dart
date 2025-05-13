@@ -35,7 +35,6 @@ class Post {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': id,
       'uid': uid,
       'message': message,
       'name': name,

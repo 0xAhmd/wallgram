@@ -21,7 +21,7 @@ class MyInputDialogBox extends StatelessWidget {
             Navigator.pop(context);
             controller.clear();
           },
-          child: Text("cancel"),
+          child: Text("Cancel"),
         ),
         TextButton(
           onPressed: () {

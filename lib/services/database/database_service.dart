@@ -68,7 +68,7 @@ class DatabaseService {
       UserProfile? user = await getUserFromFirebase(uid);
 
       Post newPost = Post(
-        id: '',
+        id: '', // Leave empty (not used)
         uid: uid,
         message: message,
         name: user!.name,
@@ -78,10 +78,26 @@ class DatabaseService {
         likedBy: [],
       );
 
-      Map<String, dynamic> postMap = newPost.toMap(); // <String, dynamic>
-      await _db.collection('posts').add(postMap);
+      // Remove 'id' from the map before saving
+      Map<String, dynamic> postMap = newPost.toMap();
+      await _db.collection('posts').add(postMap); // Firestore generates ID here
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<List<Post>> getAllPostsFromFirebase() async {
+    try {
+      QuerySnapshot snapshot =
+          await _db
+              .collection('posts')
+              .orderBy('timestamp', descending: true)
+              .get();
+
+      return snapshot.docs.map((doc) => Post.fromDocument(doc)).toList(); 
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 }
