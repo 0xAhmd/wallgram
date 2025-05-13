@@ -118,17 +118,26 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           const SizedBox(height: 25),
-          GestureDetector(
-            onTap: _showEditBioBox,
-            child: MyBioBox(
-              text:
-                  isloading
-                      ? 'Loading...'
-                      : user!.bio.isEmpty
-                      ? 'No Bio Set'
-                      : user!.bio,
-            ),
-          ),
+          currentUserId == widget.uid
+              ? GestureDetector(
+                onTap: _showEditBioBox,
+                child: MyBioBox(
+                  text:
+                      isloading
+                          ? 'Loading...'
+                          : user!.bio.isEmpty
+                          ? 'No Bio Set'
+                          : user!.bio,
+                ),
+              )
+              : MyBioBox(
+                text:
+                    isloading
+                        ? 'Loading...'
+                        : user!.bio.isEmpty
+                        ? 'No Bio Set'
+                        : user!.bio,
+              ),
           Padding(
             padding: const EdgeInsets.only(top: 6.0, left: 25),
             child: Text(
