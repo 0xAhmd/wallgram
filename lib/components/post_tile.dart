@@ -143,7 +143,8 @@ class _PostTileState extends State<PostTile> {
                 const SizedBox(width: 4),
 
                 IconButton(
-                  icon: Icon(Icons.more_horiz),
+                  icon: const Icon(Icons.
+                  more_horiz),
                   onPressed: _showOptions,
                 ),
               ],

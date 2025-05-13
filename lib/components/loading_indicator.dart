@@ -4,9 +4,9 @@ void showLoadingIndicator(BuildContext context) {
   showDialog(
     context: context,
     builder: (context) {
-      return AlertDialog(
+      return const AlertDialog(
         elevation: 0,
-        content: const Center(child: LinearProgressIndicator()),
+        content: Center(child: LinearProgressIndicator()),
         backgroundColor: Colors.transparent,
       );
     },

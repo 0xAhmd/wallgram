@@ -1,4 +1,3 @@
-import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +18,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => DatabaseProvider()),
       ],
-      child: DevicePreview(builder: (context) => const MyApp()),
+      child: const MyApp(),
     ),
   );
 }
@@ -36,7 +35,7 @@ class MyApp extends StatelessWidget {
         RegistierPage.routeName: (context) => const RegistierPage(),
       },
       theme: Provider.of<ThemeProvider>(context).themeData, //
-      home: AuthGate(),
+      home: const AuthGate(),
       debugShowCheckedModeBanner: false,
     );
   }
