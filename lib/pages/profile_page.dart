@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/my_bio_box.dart';
 import 'package:wallgram/components/my_input_dialog_box.dart';
+import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_provider.dart';
@@ -32,6 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
       context,
       listen: false,
     );
+
     user = await databaseProvider.userProfile(widget.uid);
     // print('User loaded: ${user!.bio}'); // Debugging statement
     setState(() {
@@ -74,6 +76,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final userPosts = Provider.of<DatabaseProvider>(
+      context,
+    ).userPosts(widget.uid);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -103,13 +108,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(25),
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              child:
-              //  Icon(
-              //   Icons.person,
-              //   size: 100,
-              //   color: Theme.of(context).colorScheme.primary,
-              // ),
-              Image.asset('assets/profile.png', width: 110),
+              child: Icon(
+                Icons.person,
+                size: 100,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              // Image.asset('assets/profile.png', width: 110),
             ),
           ),
 
@@ -125,7 +129,31 @@ class _ProfilePageState extends State<ProfilePage> {
                       : user!.bio,
             ),
           ),
-          
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0, left: 25),
+            child: Text(
+              'Posts',
+              style: TextStyle(
+                fontSize: 18,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+
+          userPosts.isEmpty
+              ? const Center(child: Text('No posts yet'))
+              : ListView.builder(
+                itemCount: userPosts.length,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return PostTile(
+                    post: userPosts[index],
+                    onUserTap: () {},
+                    onPostTap: () {},
+                  );
+                },
+              ),
         ],
       ),
     );

@@ -94,10 +94,18 @@ class DatabaseService {
               .orderBy('timestamp', descending: true)
               .get();
 
-      return snapshot.docs.map((doc) => Post.fromDocument(doc)).toList(); 
+      return snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
     } catch (e) {
       print(e);
       return [];
+    }
+  }
+
+  Future<void> deletPostFromFirebase(String postId) async {
+    try {
+      await _db.collection('posts').doc(postId).delete();
+    } catch (e) {
+      print(e);
     }
   }
 }

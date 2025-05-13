@@ -4,6 +4,8 @@ import 'package:wallgram/components/drawer.dart';
 import 'package:wallgram/components/my_input_dialog_box.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/models/post.dart';
+import 'package:wallgram/pages/post_page.dart';
+import 'package:wallgram/pages/profile_page.dart';
 import 'package:wallgram/services/database/database_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -72,7 +74,23 @@ class _HomePageState extends State<HomePage> {
           itemCount: posts.length,
           itemBuilder: (context, index) {
             final post = posts[index];
-            return PostTile(post: post);
+            return PostTile(
+              onPostTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PostPage(post: post)),
+                );
+              },
+              post: post,
+              onUserTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfilePage(uid: post.uid),
+                  ),
+                );
+              },
+            );
           },
         );
   }
