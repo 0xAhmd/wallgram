@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          style: TextStyle(fontSize: 25),
+          style: const TextStyle(fontSize: 25),
           isloading ? '' : user!.name,
         ),
         foregroundColor: Theme.of(context).colorScheme.primary,
@@ -103,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 25),
           Center(
             child: Container(
-              padding: EdgeInsets.all(25),
+              padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
                 color: Theme.of(context).colorScheme.secondary,
@@ -154,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
               : ListView.builder(
                 itemCount: userPosts.length,
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
                   return PostTile(
                     post: userPosts[index],

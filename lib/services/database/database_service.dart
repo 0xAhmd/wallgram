@@ -57,7 +57,7 @@ class DatabaseService {
       // Firestore update
       await _db.collection('users').doc(uid).update({'bio': bio});
       // print('Waiting for Firestore to update...');
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       // print('Bio updated successfully');
     } catch (e) {
       // print('Error updating bio: $e');
