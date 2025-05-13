@@ -9,6 +9,8 @@
 // follow / unfollow
 // search
 
+// ignore_for_file: empty_catches
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
@@ -82,7 +84,6 @@ class DatabaseService {
       Map<String, dynamic> postMap = newPost.toMap();
       await _db.collection('posts').add(postMap); // Firestore generates ID here
     } catch (e) {
-      print(e);
     }
   }
 
@@ -96,7 +97,6 @@ class DatabaseService {
 
       return snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
     } catch (e) {
-      print(e);
       return [];
     }
   }
@@ -105,7 +105,6 @@ class DatabaseService {
     try {
       await _db.collection('posts').doc(postId).delete();
     } catch (e) {
-      print(e);
     }
   }
 }
