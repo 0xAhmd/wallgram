@@ -31,7 +31,7 @@ class MyDrawer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 50.0),
                 child: Image.asset('assets/wall.png', width: 100),
               ),
-              Divider(color: Theme.of(context).colorScheme.secondary),
+              Divider(color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 10),
               DrawerListTile(
                 icon: Icons.home,
