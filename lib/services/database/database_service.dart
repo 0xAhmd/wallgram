@@ -10,6 +10,7 @@
 // search
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
@@ -58,6 +59,29 @@ class DatabaseService {
       // print('Bio updated successfully');
     } catch (e) {
       // print('Error updating bio: $e');
+    }
+  }
+
+  Future<void> postMessageInFirebase(String message) async {
+    try {
+      String uid = _auth.currentUser.uid;
+      UserProfile? user = await getUserFromFirebase(uid);
+
+      Post newPost = Post(
+        id: '',
+        uid: uid,
+        message: message,
+        name: user!.name,
+        username: user.username,
+        timestamp: Timestamp.now(),
+        likes: 0,
+        likedBy: [],
+      );
+
+      Map<String, dynamic> postMap = newPost.toMap(); // <String, dynamic>
+      await _db.collection('posts').add(postMap);
+    } catch (e) {
+      print(e);
     }
   }
 }
