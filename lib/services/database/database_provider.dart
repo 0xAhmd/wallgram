@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/database/database_service.dart';
 
@@ -12,5 +13,19 @@ class DatabaseProvider extends ChangeNotifier {
 
   Future<void> updateBio(String uid, String bio) async {
     await _db.updateUserBio(uid, bio);
+  }
+
+  List<Post> posts = [];
+  List<Post> get allPosts => posts;
+
+  Future<void> postMessage(String message) async {
+    await _db.postMessageInFirebase(message);
+    await loadAllPosts();
+  }
+
+  Future<void> loadAllPosts() async {
+    final allPosts = await _db.getAllPostsFromFirebase();
+    posts = allPosts;
+    notifyListeners();
   }
 }
