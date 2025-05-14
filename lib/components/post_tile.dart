@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, empty_catches
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +42,7 @@ class _PostTileState extends State<PostTile> {
     try {
       await notListeningDatabaseProvider.toggleLikes(widget.post.id);
     } catch (e) {
-      print(e.toString());
+    
     }
   }
 
@@ -71,7 +71,6 @@ class _PostTileState extends State<PostTile> {
     try {
       await notListeningDatabaseProvider.addComment(widget.post.id, comment);
     } catch (e) {
-      print(e.toString());
     }
   }
 
