@@ -150,7 +150,6 @@ class DatabaseService {
       Map<String, dynamic> commentMap = newComment.toMap();
       await _db.collection('comments').add(commentMap);
     } catch (e) {
-      print(e.toString());
     }
   }
 
@@ -158,7 +157,6 @@ class DatabaseService {
     try {
       await _db.collection('comments').doc(commentId).delete();
     } catch (e) {
-      print(e.toString());
     }
   }
 
@@ -172,7 +170,6 @@ class DatabaseService {
 
       return snapshot.docs.map((doc) => Comment.fromDocument(doc)).toList();
     } catch (e) {
-      print(e.toString());
       return [];
     }
   }
