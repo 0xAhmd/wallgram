@@ -31,6 +31,14 @@ class _PostTileState extends State<PostTile> {
     listen: false,
   );
 
+  void _toggleLikePost() async {
+    try {
+      await notListeningDatabaseProvider.toggleLikes(widget.post.id);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   void _showOptions() {
     final auth = AuthService();
     String currentUid = auth.currentUser.uid;
@@ -85,7 +93,9 @@ class _PostTileState extends State<PostTile> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).colorScheme;
-
+    bool isPostLikedByCurrentUser = listeningDatabaseProvider
+        .isPostLikedByCurrentUser(widget.post.id);
+    int likesCount = listeningDatabaseProvider.getLikesCount(widget.post.id);
     return GestureDetector(
       onTap: widget.onPostTap,
       child: Container(
@@ -143,8 +153,7 @@ class _PostTileState extends State<PostTile> {
                 const SizedBox(width: 4),
 
                 IconButton(
-                  icon: const Icon(Icons.
-                  more_horiz),
+                  icon: const Icon(Icons.more_horiz),
                   onPressed: _showOptions,
                 ),
               ],
@@ -157,6 +166,30 @@ class _PostTileState extends State<PostTile> {
                 fontSize: 19,
                 height: 1.4,
               ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: _toggleLikePost,
+
+                  child:
+                      isPostLikedByCurrentUser
+                          ? const Icon(Icons.favorite, color: Colors.red)
+                          : Icon(
+                            Icons.favorite_border,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  likesCount != 0 ? likesCount.toString() : '',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

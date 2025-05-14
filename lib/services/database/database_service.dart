@@ -70,7 +70,7 @@ class DatabaseService {
       UserProfile? user = await getUserFromFirebase(uid);
 
       Post newPost = Post(
-        id: '', // Leave empty (not used)
+        id: '',
         uid: uid,
         message: message,
         name: user!.name,
@@ -103,6 +103,33 @@ class DatabaseService {
   Future<void> deletPostFromFirebase(String postId) async {
     try {
       await _db.collection('posts').doc(postId).delete();
+    } catch (e) {}
+  }
+
+  Future<void> toggleLikesInFirebase(String postId) async {
+    try {
+      String uid = _auth.currentUser.uid;
+      DocumentReference postDoc = _db.collection('posts').doc(postId);
+      await _db.runTransaction((transaction) async {
+        DocumentSnapshot postSnapshot = await transaction.get(postDoc);
+
+        List<String> likeBy = List<String>.from(postSnapshot['likedBy'] ?? []);
+        int currenLikeCount = postSnapshot['likes'] ?? 0;
+
+        if (!likeBy.contains(uid)) {
+          likeBy.add(uid);
+          currenLikeCount++;
+        } else {
+          likeBy.remove(uid);
+          currenLikeCount--;
+        }
+
+        transaction.update(postDoc, {
+          'likes': currenLikeCount,
+          'likedBy': likeBy,
+        });
+
+      });
     } catch (e) {}
   }
 }
