@@ -12,6 +12,7 @@
 // ignore_for_file: empty_catches
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
@@ -128,8 +129,51 @@ class DatabaseService {
           'likes': currenLikeCount,
           'likedBy': likeBy,
         });
-
       });
     } catch (e) {}
+  }
+
+  Future<void> addCommentInFirebase(String postId, String comment) async {
+    try {
+      String uid = _auth.currentUser.uid;
+      UserProfile? user = await getUserFromFirebase(uid);
+
+      Comment newComment = Comment(
+        id: '',
+        postId: postId,
+        uid: uid,
+        message: comment,
+        name: user!.name,
+        username: user.username,
+        timestamp: Timestamp.now(),
+      ); // new comment
+      Map<String, dynamic> commentMap = newComment.toMap();
+      await _db.collection('comments').add(commentMap);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> deleteCommentInFirebase(String commentId) async {
+    try {
+      await _db.collection('comments').doc(commentId).delete();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<List<Comment>> getCommentsFromFirebase(String postId) async {
+    try {
+      QuerySnapshot snapshot =
+          await _db
+              .collection('comments')
+              .where('postId', isEqualTo: postId)
+              .get();
+
+      return snapshot.docs.map((doc) => Comment.fromDocument(doc)).toList();
+    } catch (e) {
+      print(e.toString());
+      return [];
+    }
   }
 }

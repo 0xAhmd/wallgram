@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
@@ -91,5 +92,25 @@ class DatabaseProvider extends ChangeNotifier {
       likesCount = likesCountOriginal;
       notifyListeners();
     }
+  }
+
+  final Map<String, List<Comment>> _comments = {};
+
+  List<Comment> getComments(String postId) => _comments[postId] ?? [];
+
+  Future<void> loadComments(String postId) async {
+    final allComments = await _db.getCommentsFromFirebase(postId);
+    _comments[postId] = allComments;
+    notifyListeners();
+  }
+
+  Future<void> addComment(String postId, String comment) async {
+    await _db.addCommentInFirebase(postId, comment);
+    await loadComments(postId);
+  }
+
+  Future<void> deleteComment(String postId, String commentId) async {
+    await _db.deleteCommentInFirebase(commentId);
+    await loadComments(postId); // ✅ Correct postId now
   }
 }

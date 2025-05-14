@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_provider.dart';
@@ -31,12 +32,51 @@ class _PostTileState extends State<PostTile> {
     listen: false,
   );
 
+  @override
+  void initState() {
+    _loadComments();
+    super.initState();
+  }
+
   void _toggleLikePost() async {
     try {
       await notListeningDatabaseProvider.toggleLikes(widget.post.id);
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  void _openNewCommentBox() {
+    // ignore: no_leading_underscores_for_local_identifiers
+    final TextEditingController _commentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return CustomBottomSheet(
+          onPost: (comment) {
+            _addComment(comment);
+          },
+          controller: _commentController,
+        );
+      },
+    );
+  }
+
+  Future<void> _addComment(String comment) async {
+    try {
+      await notListeningDatabaseProvider.addComment(widget.post.id, comment);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> _loadComments() async {
+    await notListeningDatabaseProvider.loadComments(widget.post.id);
   }
 
   void _showOptions() {
@@ -96,6 +136,8 @@ class _PostTileState extends State<PostTile> {
     bool isPostLikedByCurrentUser = listeningDatabaseProvider
         .isPostLikedByCurrentUser(widget.post.id);
     int likesCount = listeningDatabaseProvider.getLikesCount(widget.post.id);
+    int commentCount =
+        listeningDatabaseProvider.getComments(widget.post.id).length;
     return GestureDetector(
       onTap: widget.onPostTap,
       child: Container(
@@ -170,24 +212,49 @@ class _PostTileState extends State<PostTile> {
             const SizedBox(height: 24),
             Row(
               children: [
-                GestureDetector(
-                  onTap: _toggleLikePost,
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _toggleLikePost,
 
-                  child:
-                      isPostLikedByCurrentUser
-                          ? const Icon(Icons.favorite, color: Colors.red)
-                          : Icon(
-                            Icons.favorite_border,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                      child:
+                          isPostLikedByCurrentUser
+                              ? const Icon(Icons.favorite, color: Colors.red)
+                              : Icon(
+                                Icons.favorite_border,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      likesCount != 0 ? likesCount.toString() : '',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  likesCount != 0 ? likesCount.toString() : '',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 14,
-                  ),
+                const Spacer(),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _openNewCommentBox,
+                      child: Icon(
+                        Icons.comment,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      commentCount != 0 ? commentCount.toString() : '',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
