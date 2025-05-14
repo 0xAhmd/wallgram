@@ -40,6 +40,14 @@ dependencies:
   provider: ^6.1.5
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/wall.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
