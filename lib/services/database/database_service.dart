@@ -52,16 +52,12 @@ class DatabaseService {
 
   Future<void> updateUserBio(String uid, String bio) async {
     try {
-      // print('Updating bio for uid: $uid');
-      // print('New bio: $bio');
-
-      // Firestore update
       await _db.collection('users').doc(uid).update({'bio': bio});
-      // print('Waiting for Firestore to update...');
+      print('Waiting for Firestore to update...');
       await Future.delayed(const Duration(seconds: 1));
-      // print('Bio updated successfully');
+      print('Bio updated successfully');
     } catch (e) {
-      // print('Error updating bio: $e');
+      print('Error updating bio: $e');
     }
   }
 
@@ -235,6 +231,20 @@ class DatabaseService {
     for (var comment in userComments.docs) {
       batch.delete(comment.reference);
     }
+
+    QuerySnapshot allPosts = await _db.collection('posts').get();
+
+    for (QueryDocumentSnapshot post in allPosts.docs) {
+      Map<String, dynamic> postData = post.data() as Map<String, dynamic>;
+      var likedBy = postData['likedBy'] as List<dynamic>;
+      if (likedBy.contains(uid)) {
+        batch.update(post.reference, {
+          'likes': FieldValue.increment(-1),
+          'likedBy': FieldValue.arrayRemove([uid]),
+        });
+      }
+    }
+
     await batch.commit();
   }
 }
