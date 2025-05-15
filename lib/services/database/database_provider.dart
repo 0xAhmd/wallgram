@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/models/post.dart';
@@ -6,16 +7,40 @@ import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_service.dart';
 
 class DatabaseProvider extends ChangeNotifier {
-  // ignore: unused_field
-  final _db = DatabaseService();
-  final _auth = AuthService();
+  final DatabaseService _db;
+  final AuthService _auth;
+
+  DatabaseProvider({DatabaseService? db, AuthService? auth})
+    : _db = db ?? DatabaseService(),
+      _auth = auth ?? AuthService();
 
   Future<UserProfile?> userProfile(String uid) async {
-    return _db.getUserFromFirebase(uid);
+    try {
+      final user = await _db.getUserFromFirebase(uid);
+      if (user == null) {
+        // If user doesn't exist, create a basic profile
+        final authUser = _auth.currentUser;
+        if (authUser.uid == uid) {
+          return await createUserProfile(
+            uid: uid,
+            name: authUser.displayName ?? 'New User',
+            email: authUser.email ?? '',
+            username:
+                authUser.email?.split('@').first ??
+                'user_${uid.substring(0, 6)}',
+          );
+        }
+      }
+      return user;
+    } catch (e) {
+      debugPrint('Error getting user profile: $e');
+      return null;
+    }
   }
 
   Future<void> updateBio(String uid, String bio) async {
     await _db.updateUserBio(uid, bio);
+    notifyListeners();
   }
 
   List<Post> posts = [];
@@ -27,11 +52,16 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Future<void> loadAllPosts() async {
-    final allPosts = await _db.getAllPostsFromFirebase();
-    final blockedUsers = await _db.getBlockedUsersUidsFromFirebase();
-    posts = allPosts.where((post) => !blockedUsers.contains(post.uid)).toList();
-    initializeLikesMap();
-    notifyListeners();
+    try {
+      final allPosts = await _db.getAllPostsFromFirebase();
+      final blockedUsers = await _db.getBlockedUsersUidsFromFirebase();
+      posts =
+          allPosts.where((post) => !blockedUsers.contains(post.uid)).toList();
+      initializeLikesMap();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading posts: $e');
+    }
   }
 
   List<Post> userPosts(String uid) =>
@@ -43,30 +73,23 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Map<String, int> likesCount = {};
-  Set<String> likes =
-      {}; // changed from List<String> to Set<String> for efficiency
+  Set<String> likes = {};
 
-  bool isPostLikedByCurrentUser(String postId) {
-    return likes.contains(postId);
-  }
+  bool isPostLikedByCurrentUser(String postId) => likes.contains(postId);
 
-  int getLikesCount(String postId) {
-    return likesCount[postId] ?? 0; // default to 0 if not initialized
-  }
+  int getLikesCount(String postId) => likesCount[postId] ?? 0;
 
-  void initializeLikesMap() async {
+  void initializeLikesMap() {
     likesCount.clear();
     likes.clear();
 
     final currentUserId = _auth.currentUser.uid;
     for (var post in posts) {
-      likesCount[post.id] = post.likes; // ensure default fallback
-
+      likesCount[post.id] = post.likes;
       if (post.likedBy.contains(currentUserId)) {
         likes.add(post.id);
       }
     }
-
     notifyListeners();
   }
 
@@ -77,7 +100,6 @@ class DatabaseProvider extends ChangeNotifier {
     if (likes.contains(postId)) {
       likes.remove(postId);
       likesCount[postId] = (likesCount[postId] ?? 1) - 1;
-      if (likesCount[postId]! < 0) likesCount[postId] = 0;
     } else {
       likes.add(postId);
       likesCount[postId] = (likesCount[postId] ?? 0) + 1;
@@ -88,10 +110,11 @@ class DatabaseProvider extends ChangeNotifier {
     try {
       await _db.toggleLikesInFirebase(postId);
     } catch (e) {
-      // rollback on failure
+      // Rollback on failure
       likes = likedPostOriginal;
       likesCount = likesCountOriginal;
       notifyListeners();
+      rethrow;
     }
   }
 
@@ -100,9 +123,13 @@ class DatabaseProvider extends ChangeNotifier {
   List<Comment> getComments(String postId) => _comments[postId] ?? [];
 
   Future<void> loadComments(String postId) async {
-    final allComments = await _db.getCommentsFromFirebase(postId);
-    _comments[postId] = allComments;
-    notifyListeners();
+    try {
+      final allComments = await _db.getCommentsFromFirebase(postId);
+      _comments[postId] = allComments;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading comments: $e');
+    }
   }
 
   Future<void> addComment(String postId, String comment) async {
@@ -112,38 +139,66 @@ class DatabaseProvider extends ChangeNotifier {
 
   Future<void> deleteComment(String postId, String commentId) async {
     await _db.deleteCommentInFirebase(commentId);
-    await loadComments(postId); // ✅ Correct postId now
+    await loadComments(postId);
   }
 
   List<UserProfile> _blockedUsers = [];
   List<UserProfile> get blockedUsers => _blockedUsers;
 
   Future<void> loadBlockedUsers() async {
-    final blockedUsersIds = await _db.getBlockedUsersUidsFromFirebase();
-    final blockedUserData = await Future.wait(
-      blockedUsersIds.map((id) => _db.getUserFromFirebase(id)),
-    );
-    _blockedUsers = blockedUserData.whereType<UserProfile>().toList();
-    notifyListeners();
+    try {
+      final blockedUsersIds = await _db.getBlockedUsersUidsFromFirebase();
+      final blockedUserData = await Future.wait(
+        blockedUsersIds.map((id) => _db.getUserFromFirebase(id)),
+      );
+      _blockedUsers = blockedUserData.whereType<UserProfile>().toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading blocked users: $e');
+    }
   }
 
   Future<void> blockUser(String userId) async {
     await _db.blockUserInFirebase(userId);
     await loadBlockedUsers();
     await loadAllPosts();
-    notifyListeners();
   }
 
   Future<void> unBlockUser(String userId) async {
     await _db.unBlockUserInFirebase(userId);
     await loadBlockedUsers();
     await loadAllPosts();
-    notifyListeners();
   }
 
   Future<void> reporUser(String postId, String userId) async {
     await _db.reportUserInFirebase(userId, postId);
   }
 
-  Future<void> deleteUserAccount() async {}
+  Future<UserProfile> createUserProfile({
+    required String uid,
+    required String name,
+    required String email,
+    required String username,
+    String bio = '',
+  }) async {
+    try {
+      await _db.firestore.collection('users').doc(uid).set({
+        'name': name,
+        'email': email,
+        'username': username,
+        'bio': bio,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return UserProfile(
+        uid: uid,
+        name: name,
+        email: email,
+        username: username,
+        bio: bio,
+      );
+    } catch (e) {
+      debugPrint('Error creating user profile: $e');
+      rethrow;
+    }
+  }
 }

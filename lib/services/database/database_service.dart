@@ -18,6 +18,9 @@ import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
 class DatabaseService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseFirestore get firestore => _firestore;
+
   final _auth = AuthService();
   final _db = FirebaseFirestore.instance;
 

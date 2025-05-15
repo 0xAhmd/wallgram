@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
+import 'package:wallgram/components/square_tile.dart';
 import 'package:wallgram/pages/home_page.dart';
+import 'package:wallgram/pages/profile_page.dart';
 import 'package:wallgram/pages/register_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
@@ -19,43 +21,73 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final _auth = AuthService();
 
- void login() async {
-  showLoadingIndicator(context);
-  try {
-    await _auth.loginService(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-    if (mounted) {
+  void login() async {
+    showLoadingIndicator(context);
+    try {
+      await _auth.loginService(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (mounted) {
+        hideLoadingIndicator(context);
+        _emailController.clear();
+        _passwordController.clear();
+        Navigator.pushReplacementNamed(context, HomePage.routeName);
+      }
+    } catch (e) {
+      if (mounted) hideLoadingIndicator(context);
+
+      String errorMessage = 'An unexpected error occurred';
+      if (e.toString().contains('Invalid password')) {
+        errorMessage = 'The password you entered is incorrect.';
+      } else if (e.toString().contains('User not found')) {
+        errorMessage = 'No account found with this email.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _signInWithGoogle(BuildContext context) async {
+    showLoadingIndicator(context);
+    try {
+      final user = await _auth.handleGoogleSignIn();
+
       hideLoadingIndicator(context);
 
-      // Clear login fields (optional)
-      _emailController.clear();
-      _passwordController.clear();
-
-      // Navigate to home page
-      Navigator.pushReplacementNamed(context, HomePage.routeName); // Adjust route as needed
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => ProfilePage(uid: user.uid)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Google sign-in failed or canceled")),
+        );
+      }
+    } catch (e) {
+      hideLoadingIndicator(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
-  } catch (e) {
-    if (mounted) hideLoadingIndicator(context);
-
-    String errorMessage = 'An unexpected error occurred';
-    if (e.toString().contains('Invalid password')) {
-      errorMessage = 'The password you entered is incorrect.';
-    } else if (e.toString().contains('User not found')) {
-      errorMessage = 'No account found with this email.';
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(errorMessage, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +140,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 25),
                 MyCustomButton(text: 'Login', onPressed: login),
                 const SizedBox(height: 20),
@@ -136,6 +167,36 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(color: Colors.grey[400], thickness: 0.5),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'Or Sign in With',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(color: Colors.grey[400], thickness: 0.5),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomSquareTile(
+                      img: 'assets/google.png',
+                      onTap: () => _signInWithGoogle(context),
+                    ),
+                    const SizedBox(width: 24),
+                    CustomSquareTile(onTap: () {}, img: 'assets/github.png'),
                   ],
                 ),
               ],
