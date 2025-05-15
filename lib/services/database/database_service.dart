@@ -149,15 +149,13 @@ class DatabaseService {
       ); // new comment
       Map<String, dynamic> commentMap = newComment.toMap();
       await _db.collection('comments').add(commentMap);
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   Future<void> deleteCommentInFirebase(String commentId) async {
     try {
       await _db.collection('comments').doc(commentId).delete();
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   Future<List<Comment>> getCommentsFromFirebase(String postId) async {
@@ -172,5 +170,71 @@ class DatabaseService {
     } catch (e) {
       return [];
     }
+  }
+
+  Future<void> reportUserInFirebase(String userId, String postId) async {
+    final currentUserId = _auth.currentUser.uid;
+
+    final report = {
+      'reportedBy': currentUserId,
+      'messageId': postId,
+      'messageOwnerID': userId,
+      'timestamp:': FieldValue.serverTimestamp(),
+    };
+    await _db.collection('reports').add(report);
+  }
+
+  Future<void> blockUserInFirebase(String userId) async {
+    final currentUserId = _auth.currentUser.uid;
+    //
+    await _db
+        .collection('users')
+        .doc(currentUserId)
+        .collection('blockedUsers')
+        .doc(userId)
+        .set({});
+  }
+
+  Future<void> unBlockUserInFirebase(String blockedUserId) async {
+    final currentUserId = _auth.currentUser.uid;
+    //
+    await _db
+        .collection('users')
+        .doc(currentUserId)
+        .collection('blockedUsers')
+        .doc(blockedUserId)
+        .delete();
+  }
+
+  Future<List<String>> getBlockedUsersUidsFromFirebase() async {
+    final currentUserId = _auth.currentUser.uid;
+
+    final snapshot =
+        await _db
+            .collection('users')
+            .doc(currentUserId)
+            .collection('blockedUsers')
+            .get();
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
+
+  Future<void> deleteUserInfoFromFirebase(String uid) async {
+    WriteBatch batch = _db.batch();
+    DocumentReference userDocRef = _db.collection('users').doc(uid);
+    batch.delete(userDocRef);
+    QuerySnapshot userPosts =
+        await _db.collection('posts').where('uid', isEqualTo: uid).get();
+
+    for (var post in userPosts.docs) {
+      batch.delete(post.reference);
+    }
+
+    QuerySnapshot userComments =
+        await _db.collection('comments').where('uid', isEqualTo: uid).get();
+
+    for (var comment in userComments.docs) {
+      batch.delete(comment.reference);
+    }
+    await batch.commit();
   }
 }

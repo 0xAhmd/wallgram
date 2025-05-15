@@ -33,6 +33,7 @@ dependencies:
   device_preview: ^1.2.0
   firebase_auth: ^5.5.3
   firebase_core: ^3.13.0
+  quickalert: ^1.1.0 
   flutter:
     sdk: flutter
   google_fonts: ^6.2.1
