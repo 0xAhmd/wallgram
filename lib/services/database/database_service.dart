@@ -53,8 +53,7 @@ class DatabaseService {
     try {
       await _db.collection('users').doc(uid).update({'bio': bio});
       await Future.delayed(const Duration(seconds: 1));
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   Future<void> postMessageInFirebase(String message) async {
@@ -211,36 +210,46 @@ class DatabaseService {
   }
 
   Future<void> deleteUserInfoFromFirebase(String uid) async {
-    WriteBatch batch = _db.batch();
-    DocumentReference userDocRef = _db.collection('users').doc(uid);
-    batch.delete(userDocRef);
-    QuerySnapshot userPosts =
-        await _db.collection('posts').where('uid', isEqualTo: uid).get();
-
-    for (var post in userPosts.docs) {
-      batch.delete(post.reference);
-    }
-
-    QuerySnapshot userComments =
-        await _db.collection('comments').where('uid', isEqualTo: uid).get();
-
-    for (var comment in userComments.docs) {
-      batch.delete(comment.reference);
-    }
-
+    // First, handle all updates (removing likes from posts)
     QuerySnapshot allPosts = await _db.collection('posts').get();
+    WriteBatch updateBatch = _db.batch();
 
     for (QueryDocumentSnapshot post in allPosts.docs) {
       Map<String, dynamic> postData = post.data() as Map<String, dynamic>;
       var likedBy = postData['likedBy'] as List<dynamic>;
       if (likedBy.contains(uid)) {
-        batch.update(post.reference, {
+        updateBatch.update(post.reference, {
           'likes': FieldValue.increment(-1),
           'likedBy': FieldValue.arrayRemove([uid]),
         });
       }
     }
 
-    await batch.commit();
+    // Commit the updates first
+    await updateBatch.commit();
+
+    // Then handle all deletions in a separate batch
+    WriteBatch deleteBatch = _db.batch();
+
+    // Delete user document
+    DocumentReference userDocRef = _db.collection('users').doc(uid);
+    deleteBatch.delete(userDocRef);
+
+    // Delete user's posts
+    QuerySnapshot userPosts =
+        await _db.collection('posts').where('uid', isEqualTo: uid).get();
+    for (var post in userPosts.docs) {
+      deleteBatch.delete(post.reference);
+    }
+
+    // Delete user's comments
+    QuerySnapshot userComments =
+        await _db.collection('comments').where('uid', isEqualTo: uid).get();
+    for (var comment in userComments.docs) {
+      deleteBatch.delete(comment.reference);
+    }
+
+    // Commit the deletions
+    await deleteBatch.commit();
   }
 }
