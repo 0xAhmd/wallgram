@@ -35,7 +35,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     user = await databaseProvider.userProfile(widget.uid);
-    // print('User loaded: ${user!.bio}'); // Debugging statement
     setState(() {
       isloading = false;
     });
@@ -57,16 +56,13 @@ class _ProfilePageState extends State<ProfilePage> {
           hintText: "Update your bio",
           controller: _bioController,
           onPost: (newBio) async {
-            print('Updated Bio: $newBio'); // Debug
             if (newBio.isNotEmpty) {
               await DatabaseProvider().updateBio(widget.uid, newBio);
               await loadUser(); // Reload user data
               setState(() {
                 isloading = false;
               });
-              print('Bio updated successfully');
             } else {
-              print('Bio cannot be empty');
             }
           },
         );
@@ -75,18 +71,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void updateBio() async {
-    print(
-      'Updated Bio: ${_bioController.text}',
-    ); // Ensure this has the value the user entered
     if (_bioController.text.isNotEmpty) {
       await DatabaseProvider().updateBio(widget.uid, _bioController.text);
       await loadUser(); // Reload the user data to reflect the changes
       setState(() {
         isloading = false;
       });
-      print('Bio updated successfully');
     } else {
-      print('Bio cannot be empty');
     }
   }
 
