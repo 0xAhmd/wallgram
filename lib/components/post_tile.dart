@@ -57,10 +57,11 @@ class _PostTileState extends State<PostTile> {
       ),
       builder: (context) {
         return CustomBottomSheet(
-          onPost: (comment) {
-            _addComment(comment);
-          },
           controller: _commentController,
+          onPost: (comment) => _addComment(comment),
+          title: 'New Comment',
+          hintText: 'Add a comment...',
+          buttonLabel: 'COMMENT',
         );
       },
     );
@@ -112,7 +113,7 @@ class _PostTileState extends State<PostTile> {
                   onTap: () async {
                     Navigator.pop(context);
                     await Future.delayed(
-                    const  Duration(milliseconds: 200),
+                      const Duration(milliseconds: 200),
                     ); // let the bottom sheet close
                     _blockUserConfirmationBox();
                   },

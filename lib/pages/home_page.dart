@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/drawer.dart';
-import 'package:wallgram/components/my_input_dialog_box.dart';
+
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/post_page.dart';
@@ -15,6 +16,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// ignore: unused_element
 TextEditingController _postController = TextEditingController();
 
 class _HomePageState extends State<HomePage> {
@@ -32,18 +34,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openPostMessageBox() {
-    showDialog(
+    final controller = TextEditingController();
+    showModalBottomSheet(
       context: context,
-      builder:
-          (context) => MyInputDialogBox(
-            controller: _postController,
-            hintText: 'Drop a post',
-            onPressedText: 'POST',
-            onPressed: () async {
-              await dataprovider.postMessage(_postController.text);
-              _postController.clear();
-            },
-          ),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return CustomBottomSheet(
+          controller: controller,
+          title: 'New Post',
+          hintText: 'Drop a post',
+          buttonLabel: 'POST',
+          onPost: (message) async {
+            await dataprovider.postMessage(message);
+            controller.clear();
+          },
+        );
+      },
     );
   }
 

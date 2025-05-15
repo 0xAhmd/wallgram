@@ -5,9 +5,16 @@ class CustomBottomSheet extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onPost,
+    this.title = 'New Comment',
+    this.hintText = 'Add a comment...',
+    this.buttonLabel = 'POST',
   });
+
   final TextEditingController controller;
-  final void Function(String) onPost; // <--- Handle callback here
+  final void Function(String) onPost;
+  final String title;
+  final String hintText;
+  final String buttonLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +30,12 @@ class CustomBottomSheet extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'New Comment',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -33,7 +43,7 @@ class CustomBottomSheet extends StatelessWidget {
                 autofocus: true,
                 maxLines: null,
                 decoration: InputDecoration(
-                  hintText: 'Add a comment...',
+                  hintText: hintText,
                   filled: true,
                   fillColor: Theme.of(context).colorScheme.secondary,
                   border: OutlineInputBorder(
@@ -58,14 +68,14 @@ class CustomBottomSheet extends StatelessWidget {
                     color: Colors.lightBlueAccent,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.send, color: Colors.white),
-                      SizedBox(width: 8),
+                      const Icon(Icons.send, color: Colors.white),
+                      const SizedBox(width: 8),
                       Text(
-                        'POST',
-                        style: TextStyle(
+                        buttonLabel,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

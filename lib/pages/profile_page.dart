@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/my_bio_box.dart';
-import 'package:wallgram/components/my_input_dialog_box.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
@@ -42,35 +42,51 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showEditBioBox() {
-    if (user != null) {
-      _bioController.text =
-          user!.bio; // Set current bio as default in the controller
-    }
-    showDialog(
+    showModalBottomSheet(
+      
       context: context,
-      builder:
-          (context) => MyInputDialogBox(
-            onPressed: updateBio,
-            hintText: 'Enter your bio',
-            onPressedText: "Update",
-            controller: _bioController,
-          ),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        _bioController.text = user?.bio ?? '';
+        return CustomBottomSheet(
+          title: "Edit Bio",
+          buttonLabel: "UPDATE",
+          hintText: "Update your bio",
+          controller: _bioController,
+          onPost: (newBio) async {
+            print('Updated Bio: $newBio'); // Debug
+            if (newBio.isNotEmpty) {
+              await DatabaseProvider().updateBio(widget.uid, newBio);
+              await loadUser(); // Reload user data
+              setState(() {
+                isloading = false;
+              });
+              print('Bio updated successfully');
+            } else {
+              print('Bio cannot be empty');
+            }
+          },
+        );
+      },
     );
   }
 
   void updateBio() async {
-    // print(
-    //   'Updated Bio: ${_bioController.text}',
-    // ); // Ensure this has the value the user entered
+    print(
+      'Updated Bio: ${_bioController.text}',
+    ); // Ensure this has the value the user entered
     if (_bioController.text.isNotEmpty) {
       await DatabaseProvider().updateBio(widget.uid, _bioController.text);
       await loadUser(); // Reload the user data to reflect the changes
       setState(() {
         isloading = false;
       });
-      // print('Bio updated successfully');
+      print('Bio updated successfully');
     } else {
-      // print('Bio cannot be empty');
+      print('Bio cannot be empty');
     }
   }
 
