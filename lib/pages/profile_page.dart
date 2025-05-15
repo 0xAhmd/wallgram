@@ -29,20 +29,39 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> loadUser() async {
-    final databaseProvider = Provider.of<DatabaseProvider>(
-      context,
-      listen: false,
-    );
+    try {
+      final databaseProvider = Provider.of<DatabaseProvider>(
+        context,
+        listen: false,
+      );
+      user = await databaseProvider.userProfile(widget.uid);
 
-    user = await databaseProvider.userProfile(widget.uid);
-    setState(() {
-      isloading = false;
-    });
+      // If user is null (not found in database), create a basic profile
+      if (user == null && widget.uid == currentUserId) {
+        final currentUser = AuthService().currentUser;
+        await databaseProvider.createUserProfile(
+          uid: currentUser.uid,
+          name: currentUser.displayName ?? 'New User',
+          email: currentUser.email ?? '',
+          username:
+              currentUser.email?.split('@').first ??
+              'user_${currentUser.uid.substring(0, 6)}',
+        );
+        user = await databaseProvider.userProfile(widget.uid);
+      }
+    } catch (e) {
+      debugPrint('Error loading user: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isloading = false;
+        });
+      }
+    }
   }
 
   void _showEditBioBox() {
     showModalBottomSheet(
-      
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -62,8 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
               setState(() {
                 isloading = false;
               });
-            } else {
-            }
+            } else {}
           },
         );
       },
@@ -77,8 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         isloading = false;
       });
-    } else {
-    }
+    } else {}
   }
 
   @override
@@ -86,13 +103,14 @@ class _ProfilePageState extends State<ProfilePage> {
     final userPosts = Provider.of<DatabaseProvider>(
       context,
     ).userPosts(widget.uid);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         centerTitle: true,
         title: Text(
           style: const TextStyle(fontSize: 25),
-          isloading ? '' : user!.name,
+          isloading ? 'Loading...' : user?.name ?? 'Profile',
         ),
         foregroundColor: Theme.of(context).colorScheme.primary,
       ),
@@ -104,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontSize: 18,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              isloading ? '' : '@${user!.username}',
+              isloading ? 'Loading...' : '@${user?.username ?? 'user'}',
             ),
           ),
           const SizedBox(height: 25),

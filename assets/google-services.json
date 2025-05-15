@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "755663071671-7rf90sba5j5uni8e2givd4j1fjlbpf1m.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.wallgram",
-            "certificate_hash": "b64a370b462337a6b78cc0879f17bbd9c86484dc"
-          }
-        },
-        {
           "client_id": "755663071671-qhcqv16q8agv2mq7llksrqv056mi7gu2.apps.googleusercontent.com",
           "client_type": 3
         }
