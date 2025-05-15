@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/firebase_options.dart';
+import 'package:wallgram/pages/account_settings_page.dart';
+import 'package:wallgram/pages/block_list_page.dart';
 import 'package:wallgram/pages/home_page.dart';
 import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/pages/register_page.dart';
@@ -29,13 +31,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: '/',
       routes: {
+        '/': (context) => const AuthGate(),
+        AccountSettingsPage.routeName: (context) => const AccountSettingsPage(),
+        BlockListPage.routeName: (context) => const BlockListPage(),
         HomePage.routeName: (context) => const HomePage(),
         LoginPage.routeName: (context) => const LoginPage(),
         RegistierPage.routeName: (context) => const RegistierPage(),
       },
       theme: Provider.of<ThemeProvider>(context).themeData, //
-      home: const AuthGate(),
       debugShowCheckedModeBanner: false,
     );
   }

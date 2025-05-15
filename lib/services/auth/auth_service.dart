@@ -9,6 +9,7 @@ auth service to handle authentication using firebase
  */
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wallgram/services/database/database_service.dart';
 
 class AuthService {
   // get an instance from current user
@@ -53,5 +54,11 @@ class AuthService {
 
   Future<void> logoutUser() async {
     await _auth.signOut();
+  }
+
+  Future<void> deleteUserAccount() async {
+    User? user = _auth.currentUser!;
+    await DatabaseService().deleteUserInfoFromFirebase(user.uid);
+    await user.delete();
   }
 }

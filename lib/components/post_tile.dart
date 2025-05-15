@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/quickalert.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
@@ -41,9 +42,7 @@ class _PostTileState extends State<PostTile> {
   void _toggleLikePost() async {
     try {
       await notListeningDatabaseProvider.toggleLikes(widget.post.id);
-    } catch (e) {
-    
-    }
+    } catch (e) {}
   }
 
   void _openNewCommentBox() {
@@ -70,8 +69,7 @@ class _PostTileState extends State<PostTile> {
   Future<void> _addComment(String comment) async {
     try {
       await notListeningDatabaseProvider.addComment(widget.post.id, comment);
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadComments() async {
@@ -105,13 +103,18 @@ class _PostTileState extends State<PostTile> {
                   title: const Text('report'),
                   onTap: () {
                     Navigator.pop(context);
+                    _reportPostConfirmationBox();
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.block),
                   title: Text('block @${widget.post.username}'),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
+                    await Future.delayed(
+                    const  Duration(milliseconds: 200),
+                    ); // let the bottom sheet close
+                    _blockUserConfirmationBox();
                   },
                 ),
               ],
@@ -126,6 +129,53 @@ class _PostTileState extends State<PostTile> {
           ),
         );
       },
+    );
+  }
+
+  void _reportPostConfirmationBox() {
+    QuickAlert.show(
+      onConfirmBtnTap: () async {
+        await notListeningDatabaseProvider.reporUser(
+          widget.post.id,
+          widget.post.uid,
+        );
+
+        Navigator.pop(context);
+
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          text: "Post reported successfully",
+        );
+      },
+      context: context,
+      type: QuickAlertType.warning,
+      text: "Are you sure you want to report this post?",
+      confirmBtnText: "Yes",
+      showCancelBtn: true,
+      confirmBtnColor: Theme.of(context).colorScheme.primary,
+    );
+  }
+
+  void _blockUserConfirmationBox() {
+    QuickAlert.show(
+      onConfirmBtnTap: () async {
+        await notListeningDatabaseProvider.blockUser(widget.post.uid);
+
+        Navigator.pop(context);
+
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          text: "User blocked successfully",
+        );
+      },
+      context: context,
+      type: QuickAlertType.warning,
+      text: "Are you sure you want to block this user?",
+      confirmBtnText: "Yes",
+      showCancelBtn: true,
+      confirmBtnColor: Theme.of(context).colorScheme.primary,
     );
   }
 
