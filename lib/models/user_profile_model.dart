@@ -17,7 +17,6 @@ class UserProfile {
   factory UserProfile.fromDocument(DocumentSnapshot doc) {
     // ignore: unused_local_variable
     final data = doc.data() as Map<String, dynamic>;
-    // print('Document data: $data');
     return UserProfile(
       name: doc['name'],
       email: doc['email'],
