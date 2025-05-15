@@ -60,7 +60,7 @@ class _PostPageState extends State<PostPage> {
               : ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-
+                reverse: true,
                 itemCount: allComments.length,
                 itemBuilder: (context, index) {
                   final comment = allComments[index];
