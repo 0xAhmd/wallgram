@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
+import 'package:wallgram/helper/time_stamp_handler.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_provider.dart';
@@ -276,16 +277,20 @@ class _PostTileState extends State<PostTile> {
                               ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      likesCount != 0 ? likesCount.toString() : '',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 14,
+                    SizedBox(
+                      width: 30,
+                      child: Text(
+                        likesCount != 0 ? likesCount.toString() : '',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const Spacer(),
+                const SizedBox(width: 16),
+
                 Row(
                   children: [
                     GestureDetector(
@@ -293,18 +298,27 @@ class _PostTileState extends State<PostTile> {
                       child: Icon(
                         Icons.comment,
                         color: Theme.of(context).colorScheme.primary,
-                        size: 20,
+                        size: 23,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      commentCount != 0 ? commentCount.toString() : '',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 14,
+                    SizedBox(
+                      width: 30,
+                      child: Text(
+                        commentCount != 0 ? commentCount.toString() : '',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
+                ),
+                const Spacer(),
+                Text(
+                  formatTimeStamp(widget.post.timestamp),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ],
             ),

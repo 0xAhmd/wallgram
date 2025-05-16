@@ -74,9 +74,19 @@ class _HomePageState extends State<HomePage> {
             labelColor: Theme.of(context).colorScheme.primary,
             unselectedLabelColor: Theme.of(context).colorScheme.primary,
             dividerColor: Colors.transparent,
+            labelStyle: const TextStyle(
+              fontSize: 16, // Increase size
+              fontStyle: FontStyle.italic, // Italic text
+              fontWeight: FontWeight.w500,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 15, // Slightly smaller
+              fontStyle: FontStyle.italic,
+            ),
             tabs: const [Tab(text: 'For you'), Tab(text: 'Following')],
             indicatorColor: Theme.of(context).colorScheme.secondary,
           ),
+
           foregroundColor: Theme.of(context).colorScheme.primary,
           centerTitle: true,
           title: const Text('H O M E'),
