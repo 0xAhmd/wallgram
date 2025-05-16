@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wallgram/components/drawer_list_tile.dart';
 import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/pages/profile_page.dart';
+import 'package:wallgram/pages/search_page.dart';
 import 'package:wallgram/pages/settings_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
@@ -65,6 +66,14 @@ class MyDrawer extends StatelessWidget {
                           (context) => ProfilePage(uid: _auth.currentUser.uid),
                     ),
                   );
+                },
+              ),
+              DrawerListTile(
+                icon: Icons.search,
+                title: 'S E A R C H',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, SearchPage.routeName);
                 },
               ),
               const Spacer(),

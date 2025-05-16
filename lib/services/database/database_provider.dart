@@ -45,6 +45,9 @@ class DatabaseProvider extends ChangeNotifier {
 
   List<Post> posts = [];
   List<Post> get allPosts => posts;
+  List<Post> _followingPosts = [];
+
+  List<Post> get followingPosts => _followingPosts;
 
   Future<void> postMessage(String message) async {
     await _db.postMessageInFirebase(message);
@@ -57,11 +60,27 @@ class DatabaseProvider extends ChangeNotifier {
       final blockedUsers = await _db.getBlockedUsersUidsFromFirebase();
       posts =
           allPosts.where((post) => !blockedUsers.contains(post.uid)).toList();
+
+      loadFollowingPosts();
+
+      notifyListeners();
+
       initializeLikesMap();
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading posts: $e');
     }
+  }
+
+  Future<void> loadFollowingPosts() async {
+    String curentUserId = _auth.currentUser.uid;
+    final followingUserIds = await _db.getFollowingUidsFromFirebase(
+      curentUserId,
+    );
+
+    _followingPosts =
+        posts.where((post) => followingUserIds.contains(post.uid)).toList();
+    notifyListeners();
   }
 
   List<Post> userPosts(String uid) =>
@@ -295,5 +314,80 @@ class DatabaseProvider extends ChangeNotifier {
   bool isFollowing(String uid) {
     final currentUserId = _auth.currentUser.uid;
     return _followers[uid]?.contains(currentUserId) ?? false;
+  }
+
+  final Map<String, List<UserProfile>> _followersProfiles = {};
+  final Map<String, List<UserProfile>> _followingProfiles = {};
+
+  List<UserProfile> getListOfFollowerProfile(String uid) {
+    return _followersProfiles[uid] ?? [];
+  }
+
+  List<UserProfile> getListOfFollowingProfile(String uid) {
+    return _followingProfiles[uid] ?? [];
+  }
+
+  Future<void> loadUserFollowersProfile(String uid) async {
+    try {
+      final followerUids = await _db.getFollowersUidsFromFirebase(uid);
+      List<UserProfile> followerProfiles = [];
+      for (String followerId in followerUids) {
+        UserProfile? followerProfile = await _db.getUserFromFirebase(
+          followerId,
+        );
+
+        if (followerProfile != null) {
+          followerProfiles.add(followerProfile);
+        }
+      }
+      _followersProfiles[uid] = followerProfiles;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading followers profile: $e');
+    }
+  }
+
+  Future<void> loadUserFollowingProfile(String uid) async {
+    try {
+      final followingIds = await _db.getFollowingUidsFromFirebase(uid);
+      List<UserProfile> followingProfiles = [];
+      for (String followingId in followingIds) {
+        UserProfile? followingProfile = await _db.getUserFromFirebase(
+          followingId,
+        );
+
+        if (followingProfile != null) {
+          followingProfiles.add(followingProfile);
+        }
+      }
+      _followingProfiles[uid] = followingProfiles;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading followers profile: $e');
+    }
+  }
+
+  List<UserProfile> _searchResult = [];
+  List<UserProfile> get searchResult => _searchResult;
+
+  Future<void> searchUsers(String searchTerm) async {
+    try {
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+
+      final results =
+          querySnapshot.docs
+              .map((doc) => UserProfile.fromDocument(doc))
+              .where(
+                (user) =>
+                    user.name.toLowerCase().contains(searchTerm.toLowerCase()),
+              )
+              .toList();
+
+      _searchResult = results;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+    }
   }
 }
