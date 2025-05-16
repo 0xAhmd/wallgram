@@ -42,6 +42,8 @@ class AuthService {
   }
 
   Future<void> logoutUser() async {
+    await GoogleSignIn().signOut(); // Only if Google Sign-In was used
+
     await _auth.signOut();
   }
 
