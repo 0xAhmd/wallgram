@@ -301,6 +301,7 @@ class _PostTileState extends State<PostTile> {
                         size: 23,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     SizedBox(
                       width: 30,
                       child: Text(
