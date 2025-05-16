@@ -190,17 +190,11 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomSquareTile(
-                      img: 'assets/google.png',
-                      onTap: () => _signInWithGoogle(context),
-                    ),
-                    const SizedBox(width: 24),
-                    CustomSquareTile(onTap: () {}, img: 'assets/github.png'),
-                  ],
+                CustomSquareTile(
+                  img: 'assets/google.png',
+                  onTap: () => _signInWithGoogle(context),
                 ),
+                const SizedBox(width: 24),
               ],
             ),
           ),
