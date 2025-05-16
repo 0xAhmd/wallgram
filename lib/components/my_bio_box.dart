@@ -6,7 +6,7 @@ class MyBioBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 24),
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.secondary,

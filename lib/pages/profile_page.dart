@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
+import 'package:wallgram/components/custom_follow_button.dart';
 import 'package:wallgram/components/my_bio_box.dart';
 import 'package:wallgram/components/post_tile.dart';
+import 'package:wallgram/components/profile_stats.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_provider.dart';
@@ -20,6 +22,7 @@ class _ProfilePageState extends State<ProfilePage> {
   UserProfile? user;
   late String currentUserId;
   bool isloading = true;
+  bool isFollowing = false;
 
   @override
   void initState() {
@@ -35,6 +38,9 @@ class _ProfilePageState extends State<ProfilePage> {
         listen: false,
       );
       user = await databaseProvider.userProfile(widget.uid);
+      await databaseProvider.loadUserFollowers(widget.uid);
+      await databaseProvider.loadUserFollowing(widget.uid);
+      isFollowing = await databaseProvider.isFollowing(widget.uid);
 
       // If user is null (not found in database), create a basic profile
       if (user == null && widget.uid == currentUserId) {
@@ -98,12 +104,57 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {}
   }
 
+  Future<void> _toggleFollow() async {
+    final databaseProvider = Provider.of<DatabaseProvider>(
+      context,
+      listen: false,
+    );
+
+    if (isFollowing) {
+      await databaseProvider.unfollowUser(widget.uid);
+    } else {
+      await databaseProvider.followUser(widget.uid);
+    }
+
+    // Refresh stats after follow/unfollow
+    await databaseProvider.loadUserFollowers(widget.uid);
+    await databaseProvider.loadUserFollowing(widget.uid);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isFollowing
+              ? 'Unfollowed '
+                  '@'
+                  '${user?.username}'
+              : 'Followed ' +
+                  '@'
+                      '${user?.username}',
+
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    setState(() {
+      isFollowing = !isFollowing;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userPosts = Provider.of<DatabaseProvider>(
       context,
     ).userPosts(widget.uid);
 
+    final followerCount = Provider.of<DatabaseProvider>(
+      context,
+      listen: true,
+    ).getFollowerCount(widget.uid);
+    final followingCount = Provider.of<DatabaseProvider>(
+      context,
+      listen: true,
+    ).getFollowingCount(widget.uid);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -138,11 +189,40 @@ class _ProfilePageState extends State<ProfilePage> {
                 size: 100,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              // Image.asset('assets/profile.png', width: 110),
             ),
           ),
+          const SizedBox(height: 24),
 
-          const SizedBox(height: 25),
+          // stats
+          ProfileStats(
+            postCount: userPosts.length,
+            followerCount: followerCount,
+            followingCount: followingCount,
+          ),
+          // Follow button
+          const SizedBox(height: 8),
+          if (user != null && user!.uid != currentUserId)
+            CustomFollowButton(
+              isFollowing: isFollowing,
+              onPressed: _toggleFollow,
+            ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: Text(
+                  'Bio',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 3),
           currentUserId == widget.uid
               ? GestureDetector(
                 onTap: _showEditBioBox,
