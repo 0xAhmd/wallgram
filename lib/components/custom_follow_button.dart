@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class CustomFollowButton extends StatelessWidget {
+  final bool isFollowing;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
   const CustomFollowButton({
     super.key,
     required this.isFollowing,
     required this.onPressed,
+    this.isLoading = false,
   });
-  final void Function()? onPressed;
-  final bool isFollowing;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -18,14 +22,25 @@ class CustomFollowButton extends StatelessWidget {
           color:
               isFollowing ? Theme.of(context).colorScheme.primary : Colors.blue,
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 32),
-          onPressed: onPressed,
-          child: Text(
-            isFollowing ? 'Unfollow' : 'Follow',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.tertiary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          onPressed: isLoading ? null : onPressed, // disable tap during loading
+          child:
+              isLoading
+                  ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                  : Text(
+                    isFollowing ? 'Unfollow' : 'Follow',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
         ),
       ),
     );

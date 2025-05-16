@@ -8,6 +8,7 @@ import 'package:wallgram/pages/block_list_page.dart';
 import 'package:wallgram/pages/home_page.dart';
 import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/pages/register_page.dart';
+import 'package:wallgram/pages/search_page.dart';
 import 'package:wallgram/services/auth/auth_gate.dart';
 import 'package:wallgram/services/database/database_provider.dart';
 import 'package:wallgram/themes/theme_provider.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthGate(),
+        SearchPage.routeName: (context) => const SearchPage(),
         AccountSettingsPage.routeName: (context) => const AccountSettingsPage(),
         BlockListPage.routeName: (context) => const BlockListPage(),
         HomePage.routeName: (context) => const HomePage(),

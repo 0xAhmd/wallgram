@@ -5,7 +5,9 @@ import 'package:wallgram/components/custom_follow_button.dart';
 import 'package:wallgram/components/my_bio_box.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/components/profile_stats.dart';
+import 'package:wallgram/helper/navigator.dart';
 import 'package:wallgram/models/user_profile_model.dart';
+import 'package:wallgram/pages/follow_list_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_provider.dart';
 
@@ -23,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late String currentUserId;
   bool isloading = true;
   bool isFollowing = false;
+  bool isTogglingFollow = false; // 🆕 Added state
 
   @override
   void initState() {
@@ -105,40 +108,39 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _toggleFollow() async {
+    setState(() {
+      isTogglingFollow = true;
+      isFollowing = !isFollowing; // Optimistically update UI
+    });
+
     final databaseProvider = Provider.of<DatabaseProvider>(
       context,
       listen: false,
     );
+    try {
+      if (isFollowing) {
+        await databaseProvider.followUser(widget.uid);
+      } else {
+        await databaseProvider.unfollowUser(widget.uid);
+      }
 
-    if (isFollowing) {
-      await databaseProvider.unfollowUser(widget.uid);
-    } else {
-      await databaseProvider.followUser(widget.uid);
+      // Refresh the stats
+      await databaseProvider.loadUserFollowers(widget.uid);
+      await databaseProvider.loadUserFollowing(widget.uid);
+    } catch (e) {
+      setState(() {
+        isFollowing = !isFollowing; // Rollback
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update follow status')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isTogglingFollow = false;
+        });
+      }
     }
-
-    // Refresh stats after follow/unfollow
-    await databaseProvider.loadUserFollowers(widget.uid);
-    await databaseProvider.loadUserFollowing(widget.uid);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isFollowing
-              ? 'Unfollowed '
-                  '@'
-                  '${user?.username}'
-              : 'Followed ' +
-                  '@'
-                      '${user?.username}',
-
-          style: const TextStyle(color: Colors.white, fontSize: 18),
-        ),
-        duration: const Duration(seconds: 1),
-      ),
-    );
-
-    setState(() {
-      isFollowing = !isFollowing;
-    });
   }
 
   @override
@@ -146,7 +148,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final userPosts = Provider.of<DatabaseProvider>(
       context,
     ).userPosts(widget.uid);
-
     final followerCount = Provider.of<DatabaseProvider>(
       context,
       listen: true,
@@ -155,9 +156,14 @@ class _ProfilePageState extends State<ProfilePage> {
       context,
       listen: true,
     ).getFollowingCount(widget.uid);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => goHomePage(context),
+          icon: const Icon(Icons.arrow_back),
+        ),
         centerTitle: true,
         title: Text(
           style: const TextStyle(fontSize: 25),
@@ -195,6 +201,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
           // stats
           ProfileStats(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FollowListPage(uid: widget.uid),
+                ),
+              );
+            },
             postCount: userPosts.length,
             followerCount: followerCount,
             followingCount: followingCount,
@@ -204,7 +218,8 @@ class _ProfilePageState extends State<ProfilePage> {
           if (user != null && user!.uid != currentUserId)
             CustomFollowButton(
               isFollowing: isFollowing,
-              onPressed: _toggleFollow,
+              isLoading: isTogglingFollow,
+              onPressed: isTogglingFollow ? null : _toggleFollow,
             ),
           const SizedBox(height: 10),
           Row(

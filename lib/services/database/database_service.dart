@@ -304,4 +304,17 @@ class DatabaseService {
 
     return snapshot.docs.map((doc) => doc.id).toList();
   }
+
+  Future<List<UserProfile>> searchUsersInFirebase(String searchTerm) async {
+    final querySnapshot =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .where('name', isGreaterThanOrEqualTo: searchTerm)
+            .where('name', isLessThanOrEqualTo: searchTerm + '\uf8ff')
+            .get();
+
+    return querySnapshot.docs
+        .map((doc) => UserProfile.fromDocument(doc))
+        .toList();
+  }
 }
