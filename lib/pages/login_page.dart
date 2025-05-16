@@ -4,7 +4,6 @@ import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/components/square_tile.dart';
 import 'package:wallgram/pages/home_page.dart';
-import 'package:wallgram/pages/profile_page.dart';
 import 'package:wallgram/pages/register_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
@@ -69,23 +68,26 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final user = await _auth.handleGoogleSignIn();
 
-      hideLoadingIndicator(context);
-
       if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => ProfilePage(uid: user.uid)),
-        );
+        if (mounted) {
+          hideLoadingIndicator(context);
+          Navigator.pushReplacementNamed(context, HomePage.routeName);
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Google sign-in failed or canceled")),
-        );
+        if (mounted) {
+          hideLoadingIndicator(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Google sign-in failed or canceled")),
+          );
+        }
       }
     } catch (e) {
-      hideLoadingIndicator(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        hideLoadingIndicator(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
