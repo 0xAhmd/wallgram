@@ -41,19 +41,7 @@ class MyDrawer extends StatelessWidget {
                   Navigator.pop(context);
                 },
               ),
-              DrawerListTile(
-                icon: Icons.settings,
-                title: 'S E T T I N G S',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsPage(),
-                    ),
-                  );
-                },
-              ),
+
               DrawerListTile(
                 icon: Icons.person,
                 title: 'P R O F I L E',
@@ -74,6 +62,19 @@ class MyDrawer extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.pushNamed(context, SearchPage.routeName);
+                },
+              ),
+              DrawerListTile(
+                icon: Icons.settings,
+                title: 'S E T T I N G S',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
                 },
               ),
               const Spacer(),
