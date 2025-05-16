@@ -255,4 +255,53 @@ class DatabaseService {
     // Commit the deletions
     await deleteBatch.commit();
   }
+
+  Future<void> followUserInFirebase(String uid) async {
+    final currentUserId = _auth.currentUser.uid;
+
+    await _db
+        .collection('users')
+        .doc(currentUserId)
+        .collection('following')
+        .doc(uid)
+        .set({});
+
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('followers')
+        .doc(currentUserId)
+        .set({});
+  }
+
+  Future<void> unflollowUserInFirebase(String uid) async {
+    final currentUserId = _auth.currentUser.uid;
+    await _db
+        .collection('users')
+        .doc(currentUserId)
+        .collection('following')
+        .doc(uid)
+        .delete();
+
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('followers')
+        .doc(currentUserId)
+        .delete();
+  }
+
+  Future<List<String>> getFollowingUidsFromFirebase(String uid) async {
+    final snapshot =
+        await _db.collection('users').doc(uid).collection('following').get();
+
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
+
+  Future<List<String>> getFollowersUidsFromFirebase(String uid) async {
+    final snapshot =
+        await _db.collection('users').doc(uid).collection('followers').get();
+
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
 }
