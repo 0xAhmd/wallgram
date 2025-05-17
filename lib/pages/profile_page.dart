@@ -34,6 +34,15 @@ class _ProfilePageState extends State<ProfilePage> {
     loadUser();
   }
 
+  Future<void> _refreshData() async {
+    setState(() => isloading = true);
+    try {
+      await loadUser(); // Reuse your existing loadUser function
+    } finally {
+      if (mounted) setState(() => isloading = false);
+    }
+  }
+
   Future<void> loadUser() async {
     try {
       final databaseProvider = Provider.of<DatabaseProvider>(
@@ -108,15 +117,19 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _toggleFollow() async {
-    setState(() {
-      isTogglingFollow = true;
-      isFollowing = !isFollowing; // Optimistically update UI
-    });
+    if (!mounted) return; // Early exit if widget is disposed
 
     final databaseProvider = Provider.of<DatabaseProvider>(
       context,
       listen: false,
     );
+
+    // Update UI optimistically
+    setState(() {
+      isTogglingFollow = true;
+      isFollowing = !isFollowing;
+    });
+
     try {
       if (isFollowing) {
         await databaseProvider.followUser(widget.uid);
@@ -124,17 +137,22 @@ class _ProfilePageState extends State<ProfilePage> {
         await databaseProvider.unfollowUser(widget.uid);
       }
 
-      // Refresh the stats
-      await databaseProvider.loadUserFollowers(widget.uid);
-      await databaseProvider.loadUserFollowing(widget.uid);
+      // Refresh data if still mounted
+      if (mounted) {
+        await _refreshData();
+      }
     } catch (e) {
-      setState(() {
-        isFollowing = !isFollowing; // Rollback
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update follow status')),
-      );
+      // Only rollback if still mounted
+      if (mounted) {
+        setState(() {
+          isFollowing = !isFollowing;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update follow status')),
+        );
+      }
     } finally {
+      // Only update loading state if still mounted
       if (mounted) {
         setState(() {
           isTogglingFollow = false;
@@ -148,14 +166,14 @@ class _ProfilePageState extends State<ProfilePage> {
     final userPosts = Provider.of<DatabaseProvider>(
       context,
     ).userPosts(widget.uid);
-    final followerCount = Provider.of<DatabaseProvider>(
-      context,
-      listen: true,
-    ).getFollowerCount(widget.uid);
-    final followingCount = Provider.of<DatabaseProvider>(
-      context,
-      listen: true,
-    ).getFollowingCount(widget.uid);
+    // final followerCount = Provider.of<DatabaseProvider>(
+    //   context,
+    //   listen: true,
+    // ).getFollowerCount(widget.uid);
+    // // final followingCount = Provider.of<DatabaseProvider>(
+    //   context,
+    //   listen: true,
+    // ).getFollowingCount(widget.uid);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -171,77 +189,97 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         foregroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: ListView(
-        children: [
-          Center(
-            child: Text(
-              style: TextStyle(
-                fontSize: 18,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              isloading ? 'Loading...' : '@${user?.username ?? 'user'}',
-            ),
-          ),
-          const SizedBox(height: 25),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              child: Icon(
-                Icons.person,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // stats
-          ProfileStats(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FollowListPage(uid: widget.uid),
+      body: RefreshIndicator(
+        color: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        onRefresh: _refreshData,
+        // onRefresh: () => _refreshData(),
+        child: ListView(
+          children: [
+            Center(
+              child: Text(
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              );
-            },
-            postCount: userPosts.length,
-            followerCount: followerCount,
-            followingCount: followingCount,
-          ),
-          // Follow button
-          const SizedBox(height: 8),
-          if (user != null && user!.uid != currentUserId)
-            CustomFollowButton(
-              isFollowing: isFollowing,
-              isLoading: isTogglingFollow,
-              onPressed: isTogglingFollow ? null : _toggleFollow,
+                isloading ? 'Loading...' : '@${user?.username ?? 'user'}',
+              ),
             ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'Bio',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Theme.of(context).colorScheme.primary,
+            const SizedBox(height: 25),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(25),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                child: Icon(
+                  Icons.person,
+                  size: 100,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // stats
+            Consumer<DatabaseProvider>(
+              builder: (context, databaseProvider, child) {
+                return ProfileStats(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FollowListPage(uid: widget.uid),
+                      ),
+                    );
+                  },
+                  postCount: userPosts.length,
+                  followerCount: databaseProvider.getFollowerCount(widget.uid),
+                  followingCount: databaseProvider.getFollowingCount(
+                    widget.uid,
+                  ),
+                );
+              },
+            ),
+            // Follow button
+            const SizedBox(height: 8),
+            if (user != null && user!.uid != currentUserId)
+              CustomFollowButton(
+                isFollowing: isFollowing,
+                isLoading: isTogglingFollow,
+                onPressed: isTogglingFollow ? null : _toggleFollow,
+              ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 25),
+                  child: Text(
+                    'Bio',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 3),
-          currentUserId == widget.uid
-              ? GestureDetector(
-                onTap: _showEditBioBox,
-                child: MyBioBox(
+              ],
+            ),
+            const SizedBox(height: 3),
+            currentUserId == widget.uid
+                ? GestureDetector(
+                  onTap: _showEditBioBox,
+                  child: MyBioBox(
+                    text:
+                        isloading
+                            ? 'Loading...'
+                            : user!.bio.isEmpty
+                            ? 'No Bio Set'
+                            : user!.bio,
+                  ),
+                )
+                : MyBioBox(
                   text:
                       isloading
                           ? 'Loading...'
@@ -249,41 +287,33 @@ class _ProfilePageState extends State<ProfilePage> {
                           ? 'No Bio Set'
                           : user!.bio,
                 ),
-              )
-              : MyBioBox(
-                text:
-                    isloading
-                        ? 'Loading...'
-                        : user!.bio.isEmpty
-                        ? 'No Bio Set'
-                        : user!.bio,
-              ),
-          Padding(
-            padding: const EdgeInsets.only(top: 6.0, left: 25),
-            child: Text(
-              'Posts',
-              style: TextStyle(
-                fontSize: 18,
-                color: Theme.of(context).colorScheme.primary,
+            Padding(
+              padding: const EdgeInsets.only(top: 6.0, left: 25),
+              child: Text(
+                'Posts',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
-          ),
 
-          userPosts.isEmpty
-              ? const Center(child: Text('No posts yet'))
-              : ListView.builder(
-                itemCount: userPosts.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return PostTile(
-                    post: userPosts[index],
-                    onUserTap: () {},
-                    onPostTap: () {},
-                  );
-                },
-              ),
-        ],
+            userPosts.isEmpty
+                ? const Center(child: Text('No posts yet'))
+                : ListView.builder(
+                  itemCount: userPosts.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return PostTile(
+                      post: userPosts[index],
+                      onUserTap: () {},
+                      onPostTap: () {},
+                    );
+                  },
+                ),
+          ],
+        ),
       ),
     );
   }
