@@ -1,16 +1,75 @@
-# wallgram
+# Wallgram - A Text-Based Social Media App
 
-A new Flutter project.
+![wall](https://github.com/user-attachments/assets/61fca610-0eaa-49c5-902a-e1b0329a6d1d)
+<!-- Replace with your actual logo -->
+
+Wallgram is a minimalist, text-based social media application built with Flutter and Firebase. It focuses on meaningful connections through shared thoughts and ideas.
+
+## Features
+
+### Authentication
+- **Email & Password** login/signup
+- **Google OAuth** integration
+- Secure authentication flow
+
+### User Profiles
+- Customizable user profiles
+- Bio section for personal information
+- Follow/unfollow functionality
+
+### Content
+- Create, view, and delete text posts
+- Like and comment on posts
+- Two feed views:
+  - **For You** - Algorithmic recommendations
+  - **Following** - Posts from users you follow
+
+### Moderation & Safety
+- Report inappropriate content
+- Block unwanted users
+- Account deletion option
+
+### Personalization
+- Multiple app themes
+- User preferences
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
+- Flutter SDK
+- Firebase project setup
+- Google OAuth credentials
 
-A few resources to get you started if this is your first Flutter project:
+### Installation
+1. Clone the repository
+   ```bash
+   git clone https://github.com/0xAhmd/wallgram.git
+   ```
+2. Install dependencies
+   ```bash
+   flutter pub get
+   ```
+3. Set up Firebase:
+   - Add your `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) files
+   - Enable Email/Password and Google authentication in Firebase Console
+4. Run the app
+   ```bash
+   flutter run
+   ```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Firebase Configuration
+Wallgram uses the following Firebase services:
+- Authentication (Email/Password, Google)
+- Firestore (User data, posts, interactions)
+- Storage (Future profile picture support)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Next Steps (Planned Features)
+1. UI/UX improvements
+2. Caching for user preferences and posts
+3. Additional OAuth providers (GitHub)
+4. Offline functionality
+5. Profile picture uploads
+6. Enhanced error messaging
+7. Password recovery system
+
+
