@@ -130,18 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                   icon: Icons.password,
                   obscureText: true,
                 ),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    "Forget Password?",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
+               
                 const SizedBox(height: 25),
                 MyCustomButton(text: 'Login', onPressed: login),
                 const SizedBox(height: 20),

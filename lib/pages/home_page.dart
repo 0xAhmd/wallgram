@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/drawer.dart';
-
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/post_page.dart';
@@ -16,20 +15,39 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-// ignore: unused_element
-TextEditingController _postController = TextEditingController();
-
 class _HomePageState extends State<HomePage> {
   late DatabaseProvider dataprovider;
   bool _isInitialized = false;
+  bool _isRefreshing = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInitialized) {
       dataprovider = Provider.of<DatabaseProvider>(context);
-      dataprovider.loadAllPosts();
+      _loadInitialData();
       _isInitialized = true;
+    }
+  }
+
+  Future<void> _loadInitialData() async {
+    await dataprovider.loadAllPosts();
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+    try {
+      await dataprovider.loadAllPosts();
+      await dataprovider.loadFollowingPosts();
+    } catch (e) {
+      debugPrint('Refresh failed: $e');
+      // You could show a snackbar with the error here if you want
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
     }
   }
 
@@ -61,7 +79,6 @@ class _HomePageState extends State<HomePage> {
     late final listeningProvider = Provider.of<DatabaseProvider>(context);
     return DefaultTabController(
       length: 2,
-
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: _openPostMessageBox,
@@ -75,18 +92,17 @@ class _HomePageState extends State<HomePage> {
             unselectedLabelColor: Theme.of(context).colorScheme.primary,
             dividerColor: Colors.transparent,
             labelStyle: const TextStyle(
-              fontSize: 16, // Increase size
-              fontStyle: FontStyle.italic, // Italic text
+              fontSize: 16,
+              fontStyle: FontStyle.italic,
               fontWeight: FontWeight.w500,
             ),
             unselectedLabelStyle: const TextStyle(
-              fontSize: 15, // Slightly smaller
+              fontSize: 15,
               fontStyle: FontStyle.italic,
             ),
             tabs: const [Tab(text: 'For you'), Tab(text: 'Following')],
             indicatorColor: Theme.of(context).colorScheme.secondary,
           ),
-
           foregroundColor: Theme.of(context).colorScheme.primary,
           centerTitle: true,
           title: const Text('H O M E'),
@@ -102,30 +118,38 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildPostsList(List<Post> posts) {
-    return posts.isEmpty
-        ? const Center(child: Text('No posts yet'))
-        : ListView.builder(
-          itemCount: posts.length,
-          itemBuilder: (context, index) {
-            final post = posts[index];
-            return PostTile(
-              onPostTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PostPage(post: post)),
-                );
-              },
-              post: post,
-              onUserTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfilePage(uid: post.uid),
-                  ),
-                );
-              },
-            );
-          },
-        );
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child:
+          _isRefreshing
+              ? const Center(child: CircularProgressIndicator())
+              : posts.isEmpty
+              ? const Center(child: Text('No posts yet'))
+              : ListView.builder(
+                itemCount: posts.length,
+                itemBuilder: (context, index) {
+                  final post = posts[index];
+                  return PostTile(
+                    onPostTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PostPage(post: post),
+                        ),
+                      );
+                    },
+                    post: post,
+                    onUserTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfilePage(uid: post.uid),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+    );
   }
 }

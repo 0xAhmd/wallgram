@@ -73,14 +73,24 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Future<void> loadFollowingPosts() async {
-    String curentUserId = _auth.currentUser.uid;
-    final followingUserIds = await _db.getFollowingUidsFromFirebase(
-      curentUserId,
-    );
+    try {
+      String currentUserId = _auth.currentUser.uid;
+      final followingUserIds = await _db.getFollowingUidsFromFirebase(
+        currentUserId,
+      );
 
-    _followingPosts =
-        posts.where((post) => followingUserIds.contains(post.uid)).toList();
-    notifyListeners();
+      // Filter posts to only show those from followed users
+      _followingPosts =
+          posts.where((post) => followingUserIds.contains(post.uid)).toList();
+
+      // Also update the likes information for these posts
+      initializeLikesMap();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading following posts: $e');
+      rethrow;
+    }
   }
 
   List<Post> userPosts(String uid) =>
@@ -268,14 +278,13 @@ class DatabaseProvider extends ChangeNotifier {
         await _db.followUserInFirebase(targetUserId);
         await loadUserFollowers(currentUserId);
         await loadUserFollowing(currentUserId);
+        await loadFollowingPosts(); // Add this line to refresh following posts
       } catch (e) {
         _followers[targetUserId]?.remove(currentUserId);
-
         _followerCount[targetUserId] = (_followerCount[targetUserId] ?? 0) - 1;
         _following[currentUserId]?.remove(targetUserId);
         _followingCount[currentUserId] =
             (_followingCount[currentUserId] ?? 0) - 1;
-
         notifyListeners();
       }
     }
@@ -300,13 +309,13 @@ class DatabaseProvider extends ChangeNotifier {
       await _db.unflollowUserInFirebase(targetUserId);
       await loadUserFollowers(currentUserId);
       await loadUserFollowing(currentUserId);
+      await loadFollowingPosts(); // Add this line to refresh following posts
     } catch (e) {
       _followers[targetUserId]?.add(currentUserId);
       _followerCount[targetUserId] = (_followerCount[targetUserId] ?? 0) + 1;
       _following[currentUserId]?.add(targetUserId);
       _followingCount[currentUserId] =
           (_followingCount[currentUserId] ?? 0) + 1;
-
       notifyListeners();
     }
   }
