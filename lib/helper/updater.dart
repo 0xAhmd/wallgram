@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdater {
@@ -11,9 +13,13 @@ class AppUpdater {
   static Future<void> checkForUpdate(BuildContext context) async {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      final response = await http.get(
-        Uri.parse('https://api.github.com/repos/$_repoOwner/$_repoName/releases/latest'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            Uri.parse(
+              'https://api.github.com/repos/$_repoOwner/$_repoName/releases/latest',
+            ),
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final release = json.decode(response.body);
@@ -34,26 +40,44 @@ class AppUpdater {
   }
 
   static void _showUpdateDialog(BuildContext context, String url) {
-    showDialog(
+    QuickAlert.show(
       context: context,
-      barrierDismissible: true, // Allow closing by tapping outside
-      builder: (context) => AlertDialog(
-        title: const Text('New Version Available'),
-        content: const Text('A new version is available. Would you like to update?'),
-        actions: [
-          TextButton(
-            child: const Text('Later'),
-            onPressed: () => Navigator.pop(context),
-          ),
-          TextButton(
-            child: const Text('Update'),
-            onPressed: () {
-              launchUrl(Uri.parse(url));
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
+      type: QuickAlertType.info,
+      barrierDismissible: true,
+      title: 'In App Update',
+      text: 'A new version is available. Would you like to update?',
+      confirmBtnText: 'Update',
+      showCancelBtn: true,
+      confirmBtnColor: Theme.of(context).colorScheme.primary,
+      onConfirmBtnTap: () {
+        launchUrl(Uri.parse(url));
+        Navigator.pop(context);
+      },
+
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
     );
+    // showDialog(
+    //   context: context,
+    //   barrierDismissible: true, // Allow closing by tapping outside
+    //   builder: (context) => AlertDialog(
+    //     title: const Text('New Version Available'),
+    //     content: const Text('A new version is available. Would you like to update?'),
+    //     actions: [
+    //       TextButton(
+    //         child: const Text('Later'),
+    //         onPressed: () => Navigator.pop(context),
+    //       ),
+    //       TextButton(
+    //         child: const Text('Update'),
+    //         onPressed: () {
+    //           launchUrl(Uri.parse(url));
+    //           Navigator.pop(context);
+    //         },
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 }
