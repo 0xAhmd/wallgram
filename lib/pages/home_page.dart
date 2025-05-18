@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ForceUpdater.checkForUpdates(context); // Single added line
+      AppUpdater.checkForUpdate(context); // Single added line
     });
   }
 
