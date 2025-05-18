@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/drawer.dart';
 import 'package:wallgram/components/post_tile.dart';
+import 'package:wallgram/helper/updater.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/post_page.dart';
 import 'package:wallgram/pages/profile_page.dart';
@@ -72,6 +73,14 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ForceUpdater.checkForUpdates(context); // Single added line
+    });
   }
 
   @override
