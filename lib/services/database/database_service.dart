@@ -157,8 +157,7 @@ class DatabaseService {
       QuerySnapshot snapshot =
           await _db
               .collection('comments')
-              .where('postId', isEqualTo: postId)
-              .get();
+              .where('postId', isEqualTo: postId).get();
 
       return snapshot.docs.map((doc) => Comment.fromDocument(doc)).toList();
     } catch (e) {

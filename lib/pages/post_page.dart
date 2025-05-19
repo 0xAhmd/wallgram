@@ -25,7 +25,10 @@ class _PostPageState extends State<PostPage> {
   );
   @override
   Widget build(BuildContext context) {
+
     final allComments = listiningDatabaseProvider.getComments(widget.post.id);
+    allComments.sort((a, b) => a.timestamp.compareTo(b.timestamp)); 
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.post.username),
