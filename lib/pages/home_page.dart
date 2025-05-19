@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/drawer.dart';
@@ -103,17 +104,46 @@ class _HomePageState extends State<HomePage> {
                 final unreadCount =
                     provider.notifications.where((n) => !n['read']).length;
 
-                return Badge(
-                  label: Text('$unreadCount'),
-                  isLabelVisible: unreadCount > 0,
-                  child: IconButton(
-                    padding: const EdgeInsets.only(right: 18),
-                    icon: const Icon(Icons.notifications),
-                    onPressed:
-                        () => Navigator.pushNamed(
-                          context,
-                          notificationsPage.routeName,
+                return GestureDetector(
+                  onTap:
+                      () => Navigator.pushNamed(
+                        context,
+                        notificationsPage.routeName,
+                      ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Padding(
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(FontAwesomeIcons.bell, size: 24),
+                      ),
+                      if (unreadCount > 0)
+                        Positioned(
+                          right: 10,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 20,
+                              minHeight: 20,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$unreadCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
+                    ],
                   ),
                 );
               },

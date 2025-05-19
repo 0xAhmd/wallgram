@@ -441,6 +441,13 @@ class DatabaseProvider extends ChangeNotifier {
         }, onError: (error) {});
   }
 
+  void markAllNotificationsAsRead() {
+    for (var n in _notifications) {
+      n['read'] = true;
+    }
+    notifyListeners();
+  }
+
   Future<void> markNotificationAsRead(String notificationId) async {
     try {
       await _db.firestore
