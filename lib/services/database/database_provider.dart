@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wallgram/models/comment.dart';
@@ -50,8 +52,21 @@ class DatabaseProvider extends ChangeNotifier {
   List<Post> get followingPosts => _followingPosts;
 
   Future<void> postMessage(String message) async {
-    await _db.postMessageInFirebase(message);
-    await loadAllPosts();
+    // CORRECTED: Call once and get postId
+    String postId = await _db.postMessageInFirebase(message);
+
+    if (postId.isNotEmpty) {
+      final currentUser = await _db.getUserFromFirebase(_auth.currentUser.uid);
+      if (currentUser != null) {
+        // Send notification for the SINGLE post
+        await _db.sendPostNotification(
+          postId,
+          'New post from ${currentUser.username}',
+        );
+      }
+    }
+
+    await loadAllPosts(); // Refresh posts
   }
 
   Future<void> loadAllPosts() async {
@@ -164,6 +179,7 @@ class DatabaseProvider extends ChangeNotifier {
   Future<void> addComment(String postId, String comment) async {
     await _db.addCommentInFirebase(postId, comment);
     await loadComments(postId);
+    await _db.sendCommentNotification(postId, comment);
   }
 
   Future<void> deleteComment(String postId, String commentId) async {
@@ -398,5 +414,49 @@ class DatabaseProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error searching users: $e');
     }
+  }
+
+  List<Map<String, dynamic>> _notifications = [];
+  List<Map<String, dynamic>> get notifications => _notifications;
+
+  StreamSubscription<QuerySnapshot>? _notificationSubscription;
+
+  void initNotificationsListener() {
+    // Cancel existing subscription to avoid duplicates
+    _notificationSubscription?.cancel();
+
+    final userId = _auth.currentUser.uid;
+    _notificationSubscription = _db.firestore
+        .collection('notifications')
+        .doc(userId)
+        .collection('userNotifications')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .listen((snapshot) {
+          _notifications =
+              snapshot.docs
+                  .map((doc) => {'id': doc.id, ...doc.data()})
+                  .toList();
+          notifyListeners();
+        }, onError: (error) {});
+  }
+
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await _db.firestore
+          .collection('notifications')
+          .doc(_auth.currentUser.uid)
+          .collection('userNotifications')
+          .doc(notificationId)
+          .update({'read': true});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  void dispose() {
+    _notificationSubscription?.cancel();
+    super.dispose();
   }
 }

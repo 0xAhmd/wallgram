@@ -59,7 +59,7 @@ class DatabaseService {
     } catch (e) {}
   }
 
-  Future<void> postMessageInFirebase(String message) async {
+  Future<String> postMessageInFirebase(String message) async {
     try {
       String uid = _auth.currentUser.uid;
       UserProfile? user = await getUserFromFirebase(uid);
@@ -77,8 +77,13 @@ class DatabaseService {
 
       // Remove 'id' from the map before saving
       Map<String, dynamic> postMap = newPost.toMap();
-      await _db.collection('posts').add(postMap); // Firestore generates ID here
-    } catch (e) {}
+      // CORRECTED: Single document creation
+      DocumentReference docRef = await _db.collection('posts').add(postMap);
+      return docRef.id;
+      // Firestore generates ID here
+    } catch (e) {
+      return '';
+    }
   }
 
   Future<List<Post>> getAllPostsFromFirebase() async {
@@ -157,7 +162,8 @@ class DatabaseService {
       QuerySnapshot snapshot =
           await _db
               .collection('comments')
-              .where('postId', isEqualTo: postId).get();
+              .where('postId', isEqualTo: postId)
+              .get();
 
       return snapshot.docs.map((doc) => Comment.fromDocument(doc)).toList();
     } catch (e) {
@@ -315,5 +321,79 @@ class DatabaseService {
     return querySnapshot.docs
         .map((doc) => UserProfile.fromDocument(doc))
         .toList();
+  }
+
+  // Updated sendPostNotification
+  Future<void> sendPostNotification(String postId, String message) async {
+    try {
+      // Get current user's followers
+      final currentUserId = _auth.currentUser.uid;
+      final followers = await getFollowersUidsFromFirebase(currentUserId);
+
+      final batch = _db.batch();
+      final currentUser = await getUserFromFirebase(currentUserId);
+
+      for (final followerId in followers) {
+        // Check if follower blocked the current user
+        final blocked =
+            await _db
+                .collection('users')
+                .doc(followerId)
+                .collection('blockedUsers')
+                .doc(currentUserId)
+                .get();
+
+        if (blocked.exists) continue;
+
+        final notificationRef =
+            _db
+                .collection('notifications')
+                .doc(followerId)
+                .collection('userNotifications')
+                .doc();
+
+        batch.set(notificationRef, {
+          'type': 'new_post',
+          'senderId': currentUserId,
+          'postId': postId,
+          'message': 'New post from ${currentUser?.username ?? "a user"}',
+          'timestamp': FieldValue.serverTimestamp(),
+          'read': false,
+        });
+      }
+
+      if (followers.isNotEmpty) await batch.commit();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> sendCommentNotification(String postId, String comment) async {
+    try {
+      final postDoc = await _db.collection('posts').doc(postId).get();
+      if (!postDoc.exists) {
+        return;
+      }
+
+      final postOwnerId = postDoc['uid'];
+      final currentUser = await getUserFromFirebase(_auth.currentUser.uid);
+      if (currentUser == null) {
+        return;
+      }
+      await _db
+          .collection('notifications')
+          .doc(postOwnerId)
+          .collection('userNotifications')
+          .add({
+            'type': 'comment',
+            'senderId': currentUser.uid,
+            'postId': postId,
+            'message':
+                '${currentUser.username} commented: ${comment.length > 20 ? comment.substring(0, 20) + '...' : comment}',
+            'timestamp': FieldValue.serverTimestamp(),
+            'read': false,
+          });
+    } catch (e) {
+    }
   }
 }

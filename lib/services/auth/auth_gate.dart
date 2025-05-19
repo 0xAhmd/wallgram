@@ -1,27 +1,43 @@
-/*
-Auth gate to check if user is logged in or not and route accordingly
-so that user can't access login page if already logged in
- */
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wallgram/pages/home_page.dart';
-
-import '../../pages/login_page.dart';
+import 'package:wallgram/pages/login_page.dart';
+import 'package:wallgram/services/database/database_provider.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return const HomePage();
-        } else {
-          return const LoginPage();
+        // Show loading indicator while checking auth state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
         }
+
+        // User is logged in
+        if (snapshot.hasData) {
+          // Initialize notifications after first frame render
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final provider = Provider.of<DatabaseProvider>(
+              context,
+              listen: false,
+            );
+            provider.initNotificationsListener();
+          });
+          
+          return const HomePage();
+        }
+
+        // User not logged in
+        return const LoginPage();
       },
     );
   }

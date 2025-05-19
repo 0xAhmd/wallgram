@@ -5,6 +5,7 @@ import 'package:wallgram/components/drawer.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/helper/updater.dart';
 import 'package:wallgram/models/post.dart';
+import 'package:wallgram/pages/notification_page.dart';
 import 'package:wallgram/pages/post_page.dart';
 import 'package:wallgram/pages/profile_page.dart';
 import 'package:wallgram/services/database/database_provider.dart';
@@ -96,6 +97,28 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         drawer: MyDrawer(),
         appBar: AppBar(
+          actions: [
+            Consumer<DatabaseProvider>(
+              builder: (context, provider, _) {
+                final unreadCount =
+                    provider.notifications.where((n) => !n['read']).length;
+
+                return Badge(
+                  label: Text('$unreadCount'),
+                  isLabelVisible: unreadCount > 0,
+                  child: IconButton(
+                    padding: const EdgeInsets.only(right: 18),
+                    icon: const Icon(Icons.notifications),
+                    onPressed:
+                        () => Navigator.pushNamed(
+                          context,
+                          notificationsPage.routeName,
+                        ),
+                  ),
+                );
+              },
+            ),
+          ],
           bottom: TabBar(
             labelColor: Theme.of(context).colorScheme.primary,
             unselectedLabelColor: Theme.of(context).colorScheme.primary,
@@ -116,6 +139,7 @@ class _HomePageState extends State<HomePage> {
           centerTitle: true,
           title: const Text('H O M E'),
         ),
+
         body: TabBarView(
           children: [
             _buildPostsList(listeningProvider.allPosts),
