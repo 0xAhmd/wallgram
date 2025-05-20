@@ -12,6 +12,7 @@
 // ignore_for_file: empty_catches
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wallgram/helper/isTextBomb.dart';
 import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
@@ -61,6 +62,9 @@ class DatabaseService {
 
   Future<String> postMessageInFirebase(String message) async {
     try {
+      if(isTextBomb(message)){
+        return '';
+      }
       String uid = _auth.currentUser.uid;
       UserProfile? user = await getUserFromFirebase(uid);
 

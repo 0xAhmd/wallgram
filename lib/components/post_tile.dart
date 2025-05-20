@@ -1,11 +1,11 @@
 // ignore_for_file: deprecated_member_use, empty_catches
 
 import 'package:flutter/material.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
+
 import 'package:provider/provider.dart';
 import 'package:quickalert/quickalert.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
+import 'package:wallgram/components/expandable_text.dart';
 import 'package:wallgram/helper/arabic_detector.dart';
 import 'package:wallgram/helper/time_stamp_handler.dart';
 import 'package:wallgram/models/post.dart';
@@ -257,18 +257,8 @@ class _PostTileState extends State<PostTile> {
                 ],
               ),
               const SizedBox(height: 12),
-              Linkify(
+              ExpandableText(
                 text: widget.post.message,
-                onOpen: (link) async {
-                  final uri = Uri.tryParse(link.url);
-                  if (uri != null && await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.inAppWebView);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Could not open the link")),
-                    );
-                  }
-                },
                 textAlign:
                     isArabic(widget.post.message)
                         ? TextAlign.right
@@ -277,10 +267,6 @@ class _PostTileState extends State<PostTile> {
                   color: Theme.of(context).colorScheme.inversePrimary,
                   fontSize: 19,
                   height: 1.4,
-                ),
-                linkStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.inversePrimary,
-                  decoration: TextDecoration.underline,
                 ),
               ),
 
