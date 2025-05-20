@@ -1,8 +1,10 @@
 // ignore_for_file: deprecated_member_use, empty_catches
 
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/helper/arabic_detector.dart';
 import 'package:wallgram/helper/time_stamp_handler.dart';
@@ -193,146 +195,160 @@ class _PostTileState extends State<PostTile> {
     return GestureDetector(
       onTap: widget.onPostTap,
       child: Container(
-  padding: const EdgeInsets.all(16),
-  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-  decoration: BoxDecoration(
-    color: Theme.of(context).colorScheme.secondary,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(
-      color: theme.primary.withOpacity(0.3),
-      width: 1,
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: theme.primary.withOpacity(0.5),
-        blurRadius: 5,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  ),
-  child: Directionality(
-    textDirection: isArabic(widget.post.message)
-        ? TextDirection.rtl
-        : TextDirection.ltr,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: widget.onUserTap,
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: theme.primary.withOpacity(0.2),
-                child: Icon(
-                  Icons.person,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                widget.post.name,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            Text(
-              '@${widget.post.username}',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(width: 4),
-            IconButton(
-              icon: const Icon(Icons.more_horiz),
-              onPressed: _showOptions,
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.secondary,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.primary.withOpacity(0.3), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: theme.primary.withOpacity(0.5),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Text(
-          widget.post.message,
-          textAlign: isArabic(widget.post.message)
-              ? TextAlign.right
-              : TextAlign.left,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.inversePrimary,
-            fontSize: 19,
-            height: 1.4,
+        child: Directionality(
+          textDirection:
+              isArabic(widget.post.message)
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: widget.onUserTap,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: theme.primary.withOpacity(0.2),
+                      child: Icon(
+                        Icons.person,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.post.name,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '@${widget.post.username}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.more_horiz),
+                    onPressed: _showOptions,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Linkify(
+                text: widget.post.message,
+                onOpen: (link) async {
+                  final uri = Uri.tryParse(link.url);
+                  if (uri != null && await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.inAppWebView);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Could not open the link")),
+                    );
+                  }
+                },
+                textAlign:
+                    isArabic(widget.post.message)
+                        ? TextAlign.right
+                        : TextAlign.left,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.inversePrimary,
+                  fontSize: 19,
+                  height: 1.4,
+                ),
+                linkStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.inversePrimary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _toggleLikePost,
+                        child:
+                            isPostLikedByCurrentUser
+                                ? const Icon(Icons.favorite, color: Colors.red)
+                                : Icon(
+                                  Icons.favorite_border,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 30,
+                        child: Text(
+                          likesCount != 0 ? likesCount.toString() : '',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 16),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _openNewCommentBox,
+                        child: Icon(
+                          Icons.comment,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 23,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 30,
+                        child: Text(
+                          commentCount != 0 ? commentCount.toString() : '',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Text(
+                    formatTimeStamp(widget.post.timestamp),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: _toggleLikePost,
-                  child: isPostLikedByCurrentUser
-                      ? const Icon(Icons.favorite, color: Colors.red)
-                      : Icon(
-                          Icons.favorite_border,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 30,
-                  child: Text(
-                    likesCount != 0 ? likesCount.toString() : '',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: _openNewCommentBox,
-                  child: Icon(
-                    Icons.comment,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 23,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 30,
-                  child: Text(
-                    commentCount != 0 ? commentCount.toString() : '',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              formatTimeStamp(widget.post.timestamp),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  ),
-),
-
+      ),
     );
   }
 }
