@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/loading_indicator.dart';
@@ -41,14 +42,28 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.clear();
         Navigator.pushReplacementNamed(context, HomePage.routeName);
       }
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (mounted) hideLoadingIndicator(context);
 
       String errorMessage = 'An unexpected error occurred';
-      if (e.toString().contains('Invalid password')) {
-        errorMessage = 'The password you entered is incorrect.';
-      } else if (e.toString().contains('User not found')) {
-        errorMessage = 'No account found with this email.';
+
+      switch (e.code) {
+        case 'wrong-password':
+          errorMessage = 'The password you entered is incorrect.';
+          break;
+        case 'user-not-found':
+          errorMessage = 'No account found with this email.';
+          break;
+        case 'invalid-credential':
+          errorMessage = 'Incorrect email or password.';
+          break;
+        case 'user-disabled':
+          errorMessage = 'This account has been disabled.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'The email address is invalid.';
+          break;
+        // Add other cases as needed
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,6 +71,18 @@ class _LoginPageState extends State<LoginPage> {
           content: Text(
             errorMessage,
             style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      if (mounted) hideLoadingIndicator(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'An unexpected error occurred',
+            style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.red,
         ),

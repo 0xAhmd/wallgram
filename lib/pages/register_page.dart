@@ -68,7 +68,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return null;
   }
-
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'Email is required';
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value))

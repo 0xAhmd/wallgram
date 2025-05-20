@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:wallgram/services/database/database_service.dart';
 
@@ -16,12 +17,8 @@ class AuthService {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        throw Exception('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        throw Exception('Wrong password.');
-      }
-      throw Exception(e.message ?? 'Unknown error');
+      debugPrint(e.message);
+      rethrow;
     }
   }
 
