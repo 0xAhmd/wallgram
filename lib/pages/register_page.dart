@@ -49,11 +49,23 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String? _validateUsername(String? value) {
     if (value == null || value.trim().isEmpty) return 'Username is required';
-    if (value.contains(' ')) return 'Spaces are not allowed';
+
+    // Trim leading and trailing spaces
+    final trimmed = value.trim();
+
+    // Disallow multiple consecutive spaces
+    if (RegExp(r'\s{2,}').hasMatch(trimmed))
+      return 'Multiple spaces are not allowed';
+
+    // Disallow leading or trailing spaces
+    if (value != trimmed) return 'Username cannot start or end with a space';
+
+    // Disallow emojis
     final emojiRegex = RegExp(
       r'[\u203C-\u3299\uD83C\uD000-\uDFFF\uD83D\uD000-\uDFFF\uD83E\uD000-\uDFFF]',
     );
-    if (emojiRegex.hasMatch(value)) return 'Emojis are not allowed';
+    if (emojiRegex.hasMatch(trimmed)) return 'Emojis are not allowed';
+
     return null;
   }
 
