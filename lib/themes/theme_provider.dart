@@ -23,6 +23,7 @@ class ThemeProvider with ChangeNotifier {
   }
 
   ThemeData _getSystemTheme() {
+    // ignore: deprecated_member_use
     final brightness = WidgetsBinding.instance.window.platformBrightness;
     return brightness == Brightness.dark ? _darkTheme : _lightTheme;
   }

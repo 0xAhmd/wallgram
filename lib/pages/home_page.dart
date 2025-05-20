@@ -76,9 +76,19 @@ class _HomePageState extends State<HomePage> {
               controller.clear();
               Navigator.of(context).pop();
             } catch (e) {
-              ScaffoldMessenger.of(
-                rootContext,
-              ).showSnackBar(SnackBar(content: Text(e.toString())));
+              final errorText = e.toString();
+
+              if (errorText.contains('Please wait')) {
+                final cooldownMessage = errorText.replaceFirst(
+                  'Exception: ',
+                  '',
+                );
+                ScaffoldMessenger.of(
+                  rootContext,
+                ).showSnackBar(SnackBar(content: Text(cooldownMessage)));
+              }
+
+              // All other errors: do nothing
             }
           },
         );

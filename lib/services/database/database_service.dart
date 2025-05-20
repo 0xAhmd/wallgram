@@ -79,9 +79,9 @@ class DatabaseService {
       if (lastPostDoc.exists) {
         final lastTs = lastPostDoc.get('lastPostTimestamp') as Timestamp;
         final diff = DateTime.now().difference(lastTs.toDate()).inSeconds;
-        if (diff < 20) {
+        if (diff < 12) {
           throw Exception(
-            'Please wait ${20 - diff} seconds before posting again.',
+            'Please wait ${12 - diff} seconds before posting again.',
           );
         }
       }
