@@ -70,13 +70,15 @@ class AuthService {
     final firebaseUser = userCredential.user;
 
     if (firebaseUser != null) {
+      // Optional: Manual extra email step
+      // await sendCustomEmailVerification(firebaseUser);
+
       final docRef = FirebaseFirestore.instance
           .collection('users')
           .doc(firebaseUser.uid);
       final doc = await docRef.get();
 
       if (!doc.exists) {
-        // Generate a username from email if display name is not available
         final username =
             firebaseUser.displayName?.toLowerCase().replaceAll(' ', '_') ??
             firebaseUser.email?.split('@').first ??
@@ -88,6 +90,7 @@ class AuthService {
           'email': firebaseUser.email ?? '',
           'bio': '',
           'createdAt': FieldValue.serverTimestamp(),
+          'email_verified_manually': false, // you control this
         });
       }
 
