@@ -56,8 +56,10 @@ class _HomePageState extends State<HomePage> {
 
   void _openPostMessageBox() {
     final controller = TextEditingController();
+    final rootContext = context;
+
     showModalBottomSheet(
-      context: context,
+      context: rootContext,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -69,8 +71,15 @@ class _HomePageState extends State<HomePage> {
           hintText: 'Drop a post',
           buttonLabel: 'POST',
           onPost: (message) async {
-            await dataprovider.postMessage(message);
-            controller.clear();
+            try {
+              await dataprovider.postMessage(message);
+              controller.clear();
+              Navigator.of(context).pop();
+            } catch (e) {
+              ScaffoldMessenger.of(
+                rootContext,
+              ).showSnackBar(SnackBar(content: Text(e.toString())));
+            }
           },
         );
       },

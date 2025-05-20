@@ -52,21 +52,18 @@ class DatabaseProvider extends ChangeNotifier {
   List<Post> get followingPosts => _followingPosts;
 
   Future<void> postMessage(String message) async {
-    // CORRECTED: Call once and get postId
-    String postId = await _db.postMessageInFirebase(message);
-
-    if (postId.isNotEmpty) {
-      final currentUser = await _db.getUserFromFirebase(_auth.currentUser.uid);
-      if (currentUser != null) {
-        // Send notification for the SINGLE post
-        await _db.sendPostNotification(
-          postId,
-          'New post from ${currentUser.username}',
-        );
+    try {
+      final postId = await _db.postMessageInFirebase(message);
+      if (postId.isNotEmpty) {
+        final u = await _db.getUserFromFirebase(_auth.currentUser.uid);
+        if (u != null) {
+          await _db.sendPostNotification(postId, 'New post from ${u.username}');
+        }
       }
+      await loadAllPosts();
+    } catch (e) {
+      rethrow;
     }
-
-    await loadAllPosts(); // Refresh posts
   }
 
   Future<void> loadAllPosts() async {

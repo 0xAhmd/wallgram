@@ -62,31 +62,61 @@ class DatabaseService {
 
   Future<String> postMessageInFirebase(String message) async {
     try {
-      if(isTextBomb(message)){
+      if (isTextBomb(message)) {
         return '';
       }
-      String uid = _auth.currentUser.uid;
-      UserProfile? user = await getUserFromFirebase(uid);
 
+      String uid = _auth.currentUser.uid;
+
+      // ➊ — Last-post cooldown check (unchanged) …
+      final lastPostDoc =
+          await _db
+              .collection('users')
+              .doc(uid)
+              .collection('meta')
+              .doc('postInfo')
+              .get();
+      if (lastPostDoc.exists) {
+        final lastTs = lastPostDoc.get('lastPostTimestamp') as Timestamp;
+        final diff = DateTime.now().difference(lastTs.toDate()).inSeconds;
+        if (diff < 20) {
+          throw Exception(
+            'Please wait ${20 - diff} seconds before posting again.',
+          );
+        }
+      }
+
+      // ➋ — Fetch user profile and guard null
+      UserProfile? user = await getUserFromFirebase(uid);
+      if (user == null) {
+        throw Exception('Unable to post: user profile not found.');
+      }
+
+      // ➌ — Build and save the post
       Post newPost = Post(
         id: '',
         uid: uid,
         message: message,
-        name: user!.name,
+        name: user.name,
         username: user.username,
         timestamp: Timestamp.now(),
         likes: 0,
         likedBy: [],
       );
+      final docRef = await _db.collection('posts').add(newPost.toMap());
 
-      // Remove 'id' from the map before saving
-      Map<String, dynamic> postMap = newPost.toMap();
-      // CORRECTED: Single document creation
-      DocumentReference docRef = await _db.collection('posts').add(postMap);
+      // ➍ — Update last-post timestamp
+      await _db
+          .collection('users')
+          .doc(uid)
+          .collection('meta')
+          .doc('postInfo')
+          .set({'lastPostTimestamp': Timestamp.now()});
+
       return docRef.id;
-      // Firestore generates ID here
     } catch (e) {
-      return '';
+      // Let UI handle it
+      rethrow;
     }
   }
 
@@ -397,7 +427,6 @@ class DatabaseService {
             'timestamp': FieldValue.serverTimestamp(),
             'read': false,
           });
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 }
