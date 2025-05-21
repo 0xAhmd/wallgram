@@ -68,6 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return null;
   }
+
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'Email is required';
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value))
@@ -170,6 +171,7 @@ class _RegisterPageState extends State<RegisterPage> {
           key: _formKey,
           child: Center(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

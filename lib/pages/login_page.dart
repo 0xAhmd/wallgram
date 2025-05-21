@@ -4,6 +4,7 @@ import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/components/square_tile.dart';
+import 'package:wallgram/pages/forgot_pw_page.dart';
 import 'package:wallgram/pages/home_page.dart';
 import 'package:wallgram/pages/register_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
@@ -126,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
         child: LayoutBuilder(
           builder:
               (context, constraints) => SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -164,7 +166,31 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 25),
                         MyCustomButton(text: 'Login', onPressed: login),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 18),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ForgotPwPage(),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
