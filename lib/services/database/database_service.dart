@@ -1,432 +1,116 @@
-// Data base service
-// this class handle all the data from and to firebase
-
-// User Profile
-// Post Message
-// Likes
-// Comments
-// Account Stuff ( blocks, reports, delete account, )
-// follow / unfollow
-// search
-
-// ignore_for_file: empty_catches
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wallgram/helper/isTextBomb.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
-import 'package:wallgram/services/auth/auth_service.dart';
+import 'package:wallgram/services/database/comments_service.dart';
+import 'package:wallgram/services/database/post_service.dart';
+import 'package:wallgram/services/database/reporting_service.dart';
+import 'package:wallgram/services/database/search_service.dart';
+import 'package:wallgram/services/database/user_service.dart';
+import 'package:wallgram/services/database/notification_service.dart';
 
 class DatabaseService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  FirebaseFirestore get firestore => _firestore;
+  final _userService = UserService();
+  final _postService = PostService();
+  final _commentService = CommentService();
+  final _notificationService = NotificationsServiceInDb();
+  final _reportService = ReportService();
+  final _searchService = SearchService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final _auth = AuthService();
-  final _db = FirebaseFirestore.instance;
-
-  Future<void> saveUserInfoInFirebase({
-    required String name,
-    required String email,
-  }) async {
-    String uid = _auth.currentUser.uid;
-    String username = email.split('@')[0];
-
-    UserProfile user = UserProfile(
-      name: name,
-      email: email,
-      uid: uid,
-      username: username,
-      bio: '',
-    );
-    final userMap = user.toMap();
-    await _db.collection('users').doc(uid).set(userMap);
+  // 🔹 Post Methods
+  Future<String> postMessageInFirebase(String message) {
+    return _postService.postMessageInFirebase(message);
   }
 
-  Future<UserProfile?> getUserFromFirebase(String uid) async {
-    try {
-      DocumentSnapshot userDoc = await _db.collection("users").doc(uid).get();
-
-      return UserProfile.fromDocument(userDoc);
-    } catch (e) {
-      return null;
-    }
+  Future<List<Post>> getAllPostsFromFirebase() {
+    return _postService.getAllPostsFromFirebase();
   }
 
-  Future<void> updateUserBio(String uid, String bio) async {
-    try {
-      await _db.collection('users').doc(uid).update({'bio': bio});
-      await Future.delayed(const Duration(seconds: 1));
-    } catch (e) {}
+  Future<void> deletPostFromFirebase(String postId) {
+    return _postService.deletPostFromFirebase(postId);
   }
 
-  Future<String> postMessageInFirebase(String message) async {
-    try {
-      if (isTextBomb(message)) {
-        return '';
-      }
-
-      String uid = _auth.currentUser.uid;
-
-      // ➊ — Last-post cooldown check (unchanged) …
-      final lastPostDoc =
-          await _db
-              .collection('users')
-              .doc(uid)
-              .collection('meta')
-              .doc('postInfo')
-              .get();
-      if (lastPostDoc.exists) {
-        final lastTs = lastPostDoc.get('lastPostTimestamp') as Timestamp;
-        final diff = DateTime.now().difference(lastTs.toDate()).inSeconds;
-        if (diff < 12) {
-          throw Exception(
-            'Please wait ${12 - diff} seconds before posting again.',
-          );
-        }
-      }
-
-      // ➋ — Fetch user profile and guard null
-      UserProfile? user = await getUserFromFirebase(uid);
-      if (user == null) {
-        throw Exception('Unable to post: user profile not found.');
-      }
-
-      // ➌ — Build and save the post
-      Post newPost = Post(
-        id: '',
-        uid: uid,
-        message: message,
-        name: user.name,
-        username: user.username,
-        timestamp: Timestamp.now(),
-        likes: 0,
-        likedBy: [],
-      );
-      final docRef = await _db.collection('posts').add(newPost.toMap());
-
-      // ➍ — Update last-post timestamp
-      await _db
-          .collection('users')
-          .doc(uid)
-          .collection('meta')
-          .doc('postInfo')
-          .set({'lastPostTimestamp': Timestamp.now()});
-
-      return docRef.id;
-    } catch (e) {
-      // Let UI handle it
-      rethrow;
-    }
+  Future<void> toggleLikesInFirebase(String postId) {
+    return _postService.toggleLikesInFirebase(postId);
   }
 
-  Future<List<Post>> getAllPostsFromFirebase() async {
-    try {
-      QuerySnapshot snapshot =
-          await _db
-              .collection('posts')
-              .orderBy('timestamp', descending: true)
-              .get();
-
-      return snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
-    } catch (e) {
-      return [];
-    }
+  // 🔹 User Methods
+  Future<UserProfile?> getUserFromFirebase(String uid) {
+    return _userService.getUserFromFirebase(uid);
   }
 
-  Future<void> deletPostFromFirebase(String postId) async {
-    try {
-      await _db.collection('posts').doc(postId).delete();
-    } catch (e) {}
+  Future<void> updateUserBio(String uid, String bio) {
+    return _userService.updateUserBio(uid, bio);
   }
 
-  Future<void> toggleLikesInFirebase(String postId) async {
-    try {
-      String uid = _auth.currentUser.uid;
-      DocumentReference postDoc = _db.collection('posts').doc(postId);
-      await _db.runTransaction((transaction) async {
-        DocumentSnapshot postSnapshot = await transaction.get(postDoc);
-
-        List<String> likeBy = List<String>.from(postSnapshot['likedBy'] ?? []);
-        int currenLikeCount = postSnapshot['likes'] ?? 0;
-
-        if (!likeBy.contains(uid)) {
-          likeBy.add(uid);
-          currenLikeCount++;
-        } else {
-          likeBy.remove(uid);
-          currenLikeCount--;
-        }
-
-        transaction.update(postDoc, {
-          'likes': currenLikeCount,
-          'likedBy': likeBy,
-        });
-      });
-    } catch (e) {}
+  Future<List<String>> getBlockedUsersUidsFromFirebase() {
+    return _userService.getBlockedUsersUidsFromFirebase(_auth.currentUser!.uid);
   }
 
-  Future<void> addCommentInFirebase(String postId, String comment) async {
-    try {
-      String uid = _auth.currentUser.uid;
-      UserProfile? user = await getUserFromFirebase(uid);
-
-      Comment newComment = Comment(
-        id: '',
-        postId: postId,
-        uid: uid,
-        message: comment,
-        name: user!.name,
-        username: user.username,
-        timestamp: Timestamp.now(),
-      ); // new comment
-      Map<String, dynamic> commentMap = newComment.toMap();
-      await _db.collection('comments').add(commentMap);
-    } catch (e) {}
+  Future<void> blockUserInFirebase(String userId) {
+    return _userService.blockUserInFirebase(userId, _auth.currentUser!.uid);
   }
 
-  Future<void> deleteCommentInFirebase(String commentId) async {
-    try {
-      await _db.collection('comments').doc(commentId).delete();
-    } catch (e) {}
+  Future<void> unBlockUserInFirebase(String userId) {
+    return _userService.unBlockUserInFirebase(userId, _auth.currentUser!.uid);
   }
 
-  Future<List<Comment>> getCommentsFromFirebase(String postId) async {
-    try {
-      QuerySnapshot snapshot =
-          await _db
-              .collection('comments')
-              .where('postId', isEqualTo: postId)
-              .get();
-
-      return snapshot.docs.map((doc) => Comment.fromDocument(doc)).toList();
-    } catch (e) {
-      return [];
-    }
+  Future<void> followUserInFirebase(String uid) {
+    return _userService.followUserInFirebase(
+      _auth.currentUser!.uid,
+      uid,
+    ); // ✅ Correct order
   }
 
-  Future<void> reportUserInFirebase(String userId, String postId) async {
-    final currentUserId = _auth.currentUser.uid;
-
-    final report = {
-      'reportedBy': currentUserId,
-      'messageId': postId,
-      'messageOwnerID': userId,
-      'timestamp:': FieldValue.serverTimestamp(),
-    };
-    await _db.collection('reports').add(report);
+  Future<void> unflollowUserInFirebase(String uid) {
+    return _userService.unflollowUserInFirebase(
+      _auth.currentUser!.uid,
+      uid,
+    ); // ✅ Correct order
   }
 
-  Future<void> blockUserInFirebase(String userId) async {
-    final currentUserId = _auth.currentUser.uid;
-    //
-    await _db
-        .collection('users')
-        .doc(currentUserId)
-        .collection('blockedUsers')
-        .doc(userId)
-        .set({});
+  Future<List<String>> getFollowersUidsFromFirebase(String uid) {
+    return _userService.getFollowersUidsFromFirebase(uid);
   }
 
-  Future<void> unBlockUserInFirebase(String blockedUserId) async {
-    final currentUserId = _auth.currentUser.uid;
-    //
-    await _db
-        .collection('users')
-        .doc(currentUserId)
-        .collection('blockedUsers')
-        .doc(blockedUserId)
-        .delete();
+  Future<List<String>> getFollowingUidsFromFirebase(String uid) {
+    return _userService.getFollowingUidsFromFirebase(uid);
   }
 
-  Future<List<String>> getBlockedUsersUidsFromFirebase() async {
-    final currentUserId = _auth.currentUser.uid;
-
-    final snapshot =
-        await _db
-            .collection('users')
-            .doc(currentUserId)
-            .collection('blockedUsers')
-            .get();
-    return snapshot.docs.map((doc) => doc.id).toList();
+  // 🔹 Comment Methods
+  Future<void> addCommentInFirebase(String postId, String comment) {
+    return _commentService.addCommentInFirebase(postId, comment);
   }
 
-  Future<void> deleteUserInfoFromFirebase(String uid) async {
-    // First, handle all updates (removing likes from posts)
-    QuerySnapshot allPosts = await _db.collection('posts').get();
-    WriteBatch updateBatch = _db.batch();
-
-    for (QueryDocumentSnapshot post in allPosts.docs) {
-      Map<String, dynamic> postData = post.data() as Map<String, dynamic>;
-      var likedBy = postData['likedBy'] as List<dynamic>;
-      if (likedBy.contains(uid)) {
-        updateBatch.update(post.reference, {
-          'likes': FieldValue.increment(-1),
-          'likedBy': FieldValue.arrayRemove([uid]),
-        });
-      }
-    }
-
-    // Commit the updates first
-    await updateBatch.commit();
-
-    // Then handle all deletions in a separate batch
-    WriteBatch deleteBatch = _db.batch();
-
-    // Delete user document
-    DocumentReference userDocRef = _db.collection('users').doc(uid);
-    deleteBatch.delete(userDocRef);
-
-    // Delete user's posts
-    QuerySnapshot userPosts =
-        await _db.collection('posts').where('uid', isEqualTo: uid).get();
-    for (var post in userPosts.docs) {
-      deleteBatch.delete(post.reference);
-    }
-
-    // Delete user's comments
-    QuerySnapshot userComments =
-        await _db.collection('comments').where('uid', isEqualTo: uid).get();
-    for (var comment in userComments.docs) {
-      deleteBatch.delete(comment.reference);
-    }
-
-    // Commit the deletions
-    await deleteBatch.commit();
+  Future<List<Comment>> getCommentsFromFirebase(String postId) {
+    return _commentService.getCommentsFromFirebase(postId);
   }
 
-  Future<void> followUserInFirebase(String uid) async {
-    final currentUserId = _auth.currentUser.uid;
-
-    await _db
-        .collection('users')
-        .doc(currentUserId)
-        .collection('following')
-        .doc(uid)
-        .set({});
-
-    await _db
-        .collection('users')
-        .doc(uid)
-        .collection('followers')
-        .doc(currentUserId)
-        .set({});
+  Future<void> deleteCommentInFirebase(String commentId) {
+    return _commentService.deleteCommentInFirebase(commentId);
   }
 
-  Future<void> unflollowUserInFirebase(String uid) async {
-    final currentUserId = _auth.currentUser.uid;
-    await _db
-        .collection('users')
-        .doc(currentUserId)
-        .collection('following')
-        .doc(uid)
-        .delete();
-
-    await _db
-        .collection('users')
-        .doc(uid)
-        .collection('followers')
-        .doc(currentUserId)
-        .delete();
+  // 🔹 Notification Methods
+  Future<void> sendPostNotification(String postId, String message) {
+    return _notificationService.sendPostNotification(postId, message);
   }
 
-  Future<List<String>> getFollowingUidsFromFirebase(String uid) async {
-    final snapshot =
-        await _db.collection('users').doc(uid).collection('following').get();
-
-    return snapshot.docs.map((doc) => doc.id).toList();
+  Future<void> sendCommentNotification(String postId, String comment) {
+    return _notificationService.sendCommentNotification(postId, comment);
   }
 
-  Future<List<String>> getFollowersUidsFromFirebase(String uid) async {
-    final snapshot =
-        await _db.collection('users').doc(uid).collection('followers').get();
-
-    return snapshot.docs.map((doc) => doc.id).toList();
+  // 🔹 Report Methods
+  Future<void> reportUserInFirebase(String userId, String postId) {
+    return _reportService.reportUserInFirebase(userId, postId);
   }
 
-  Future<List<UserProfile>> searchUsersInFirebase(String searchTerm) async {
-    final querySnapshot =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .where('name', isGreaterThanOrEqualTo: searchTerm)
-            .where('name', isLessThanOrEqualTo: searchTerm + '\uf8ff')
-            .get();
-
-    return querySnapshot.docs
-        .map((doc) => UserProfile.fromDocument(doc))
-        .toList();
+  // 🔹 Search Methods
+  Future<List<UserProfile>> searchUsers(String term) {
+    return _searchService.searchUsersInFirebase(term);
   }
 
-  // Updated sendPostNotification
-  Future<void> sendPostNotification(String postId, String message) async {
-    try {
-      // Get current user's followers
-      final currentUserId = _auth.currentUser.uid;
-      final followers = await getFollowersUidsFromFirebase(currentUserId);
-
-      final batch = _db.batch();
-      final currentUser = await getUserFromFirebase(currentUserId);
-
-      for (final followerId in followers) {
-        // Check if follower blocked the current user
-        final blocked =
-            await _db
-                .collection('users')
-                .doc(followerId)
-                .collection('blockedUsers')
-                .doc(currentUserId)
-                .get();
-
-        if (blocked.exists) continue;
-
-        final notificationRef =
-            _db
-                .collection('notifications')
-                .doc(followerId)
-                .collection('userNotifications')
-                .doc();
-
-        batch.set(notificationRef, {
-          'type': 'new_post',
-          'senderId': currentUserId,
-          'postId': postId,
-          'message': 'New post from ${currentUser?.username ?? "a user"}',
-          'timestamp': FieldValue.serverTimestamp(),
-          'read': false,
-        });
-      }
-
-      if (followers.isNotEmpty) await batch.commit();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<void> sendCommentNotification(String postId, String comment) async {
-    try {
-      final postDoc = await _db.collection('posts').doc(postId).get();
-      if (!postDoc.exists) {
-        return;
-      }
-
-      final postOwnerId = postDoc['uid'];
-      final currentUser = await getUserFromFirebase(_auth.currentUser.uid);
-      if (currentUser == null) {
-        return;
-      }
-      await _db
-          .collection('notifications')
-          .doc(postOwnerId)
-          .collection('userNotifications')
-          .add({
-            'type': 'comment',
-            'senderId': currentUser.uid,
-            'postId': postId,
-            'message':
-                '${currentUser.username} commented: ${comment.length > 20 ? comment.substring(0, 20) + '...' : comment}',
-            'timestamp': FieldValue.serverTimestamp(),
-            'read': false,
-          });
-    } catch (e) {}
-  }
+  // 🔹 Firebase instance access
+  FirebaseFirestore get firestore => FirebaseFirestore.instance;
 }

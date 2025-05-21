@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:wallgram/services/database/database_service.dart';
+import 'package:wallgram/locator.dart';
+import 'package:wallgram/services/database/user_service.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
+  final _userService = locator<UserService>();
 
   User get currentUser => _auth.currentUser!;
   String get id => _auth.currentUser!.uid;
@@ -39,20 +41,18 @@ class AuthService {
   }
 
   Future<void> logoutUser() async {
-    await GoogleSignIn().signOut(); // Only if Google Sign-In was used
-
+    await GoogleSignIn().signOut();
     await _auth.signOut();
   }
 
   Future<void> deleteUserAccount() async {
     final user = _auth.currentUser;
     if (user != null) {
-      await DatabaseService().deleteUserInfoFromFirebase(user.uid);
+      await _userService.deleteUserInfoFromFirebase(user.uid);
       await user.delete();
     }
   }
 
-  // Sign in with Google and ensure Firestore profile exists
   Future<User?> handleGoogleSignIn() async {
     final googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) return null;
@@ -64,16 +64,12 @@ class AuthService {
       idToken: googleAuth.idToken,
     );
 
-    final userCredential = await FirebaseAuth.instance.signInWithCredential(
-      credential,
-    );
+    final userCredential =
+        await FirebaseAuth.instance.signInWithCredential(credential);
     final firebaseUser = userCredential.user;
 
     if (firebaseUser != null) {
-      // Optional: Manual extra email step
-      // await sendCustomEmailVerification(firebaseUser);
-
-      final docRef = FirebaseFirestore.instance
+      final docRef = locator<UserService>().db
           .collection('users')
           .doc(firebaseUser.uid);
       final doc = await docRef.get();
@@ -90,7 +86,7 @@ class AuthService {
           'email': firebaseUser.email ?? '',
           'bio': '',
           'createdAt': FieldValue.serverTimestamp(),
-          'email_verified_manually': false, // you control this
+          'email_verified_manually': false,
         });
       }
 
@@ -99,4 +95,19 @@ class AuthService {
 
     return null;
   }
+
+  // Example usage for UserService methods that need currentUserId:
+  Future<void> saveUserInfo(String name, String email) async {
+    await _userService.saveUserInfoInFirebase(
+      uid: currentUser.uid,
+      name: name,
+      email: email,
+    );
+  }
+
+  Future<void> blockUser(String userId) async {
+    await _userService.blockUserInFirebase(currentUser.uid, userId);
+  }
+
+  // similarly for other methods...
 }

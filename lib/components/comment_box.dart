@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class CommentBox extends StatelessWidget {
-  const CommentBox({super.key, required this.comment, required this.onUserTap, required this.postId});
+  const CommentBox({
+    super.key,
+    required this.comment,
+    required this.onUserTap,
+    required this.postId,
+  });
   final Comment comment;
-    final String postId;
+  final String postId;
 
   final void Function()? onUserTap;
   void _showOptions(BuildContext context) {
@@ -28,7 +33,7 @@ class CommentBox extends StatelessWidget {
                   title: const Text('Delete'),
                   onTap: () async {
                     Navigator.pop(context);
-                    await Provider.of<DatabaseProvider>(
+                    await Provider.of<AppProvider>(
                       context,
                       listen: false,
                     ).deleteComment(postId, comment.id);

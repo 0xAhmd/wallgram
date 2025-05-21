@@ -4,7 +4,7 @@ import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
 import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/database_service.dart';
+import 'package:wallgram/services/database/index.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -22,8 +22,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _usernameController = TextEditingController();
 
   final _auth = AuthService();
-  final _db = DatabaseService();
   bool _obscurePassword = true;
+  final _userService = UserService();
 
   @override
   void initState() {
@@ -106,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _emailController.text.trim(),
         _passwordController.text,
       );
-      await _db.saveUserInfoInFirebase(
+      await _userService.saveUserInfoInFirebase(uid:  _auth.currentUser.uid,
         name: _usernameController.text.trim(),
         email: _emailController.text.trim(),
       );

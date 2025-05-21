@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/pages/home_page.dart';
 import 'package:wallgram/pages/login_page.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -16,9 +16,7 @@ class AuthGate extends StatelessWidget {
         // Show loading indicator while checking auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -26,13 +24,10 @@ class AuthGate extends StatelessWidget {
         if (snapshot.hasData) {
           // Initialize notifications after first frame render
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final provider = Provider.of<DatabaseProvider>(
-              context,
-              listen: false,
-            );
+            final provider = Provider.of<AppProvider>(context, listen: false);
             provider.initNotificationsListener();
           });
-          
+
           return const HomePage();
         }
 

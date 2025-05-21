@@ -9,7 +9,7 @@ import 'package:wallgram/helper/navigator.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/pages/follow_list_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.uid});
@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late String currentUserId;
   bool isloading = true;
   bool isFollowing = false;
-  bool isTogglingFollow = false; // 🆕 Added state
+  bool isTogglingFollow = false; 
 
   @override
   void initState() {
@@ -45,10 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> loadUser() async {
     try {
-      final databaseProvider = Provider.of<DatabaseProvider>(
-        context,
-        listen: false,
-      );
+      final databaseProvider = Provider.of<AppProvider>(context, listen: false);
       user = await databaseProvider.userProfile(widget.uid);
       await databaseProvider.loadUserFollowers(widget.uid);
       await databaseProvider.loadUserFollowing(widget.uid);
@@ -94,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
           controller: _bioController,
           onPost: (newBio) async {
             if (newBio.isNotEmpty) {
-              await DatabaseProvider().updateBio(widget.uid, newBio);
+              await AppProvider().updateBio(widget.uid, newBio);
               await loadUser(); // Reload user data
               setState(() {
                 isloading = false;
@@ -108,7 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void updateBio() async {
     if (_bioController.text.isNotEmpty) {
-      await DatabaseProvider().updateBio(widget.uid, _bioController.text);
+      await AppProvider().updateBio(widget.uid, _bioController.text);
       await loadUser(); // Reload the user data to reflect the changes
       setState(() {
         isloading = false;
@@ -119,10 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _toggleFollow() async {
     if (!mounted) return; // Early exit if widget is disposed
 
-    final databaseProvider = Provider.of<DatabaseProvider>(
-      context,
-      listen: false,
-    );
+    final databaseProvider = Provider.of<AppProvider>(context, listen: false);
 
     // Update UI optimistically
     setState(() {
@@ -163,17 +157,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userPosts = Provider.of<DatabaseProvider>(
-      context,
-    ).userPosts(widget.uid);
-    // final followerCount = Provider.of<DatabaseProvider>(
-    //   context,
-    //   listen: true,
-    // ).getFollowerCount(widget.uid);
-    // // final followingCount = Provider.of<DatabaseProvider>(
-    //   context,
-    //   listen: true,
-    // ).getFollowingCount(widget.uid);
+    final userPosts = Provider.of<AppProvider>(context).userPosts(widget.uid);
+ 
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -193,7 +178,6 @@ class _ProfilePageState extends State<ProfilePage> {
         color: Theme.of(context).colorScheme.primary,
         backgroundColor: Theme.of(context).colorScheme.surface,
         onRefresh: _refreshData,
-        // onRefresh: () => _refreshData(),
         child: ListView(
           children: [
             Center(
@@ -223,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 24),
 
             // stats
-            Consumer<DatabaseProvider>(
+            Consumer<AppProvider>(
               builder: (context, databaseProvider, child) {
                 return ProfileStats(
                   onTap: () {

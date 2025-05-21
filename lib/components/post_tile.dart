@@ -10,7 +10,7 @@ import 'package:wallgram/helper/arabic_detector.dart';
 import 'package:wallgram/helper/time_stamp_handler.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class PostTile extends StatefulWidget {
   const PostTile({
@@ -28,11 +28,11 @@ class PostTile extends StatefulWidget {
 }
 
 class _PostTileState extends State<PostTile> {
-  late final listeningDatabaseProvider = Provider.of<DatabaseProvider>(
+  late final listeningDatabaseProvider = Provider.of<AppProvider>(
     context,
     listen: true,
   );
-  late final notListeningDatabaseProvider = Provider.of<DatabaseProvider>(
+  late final notListeningDatabaseProvider = Provider.of<AppProvider>(
     context,
     listen: false,
   );

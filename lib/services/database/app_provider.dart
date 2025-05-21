@@ -8,11 +8,11 @@ import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/database_service.dart';
 
-class DatabaseProvider extends ChangeNotifier {
+class AppProvider extends ChangeNotifier {
   final DatabaseService _db;
   final AuthService _auth;
 
-  DatabaseProvider({DatabaseService? db, AuthService? auth})
+  AppProvider({DatabaseService? db, AuthService? auth})
     : _db = db ?? DatabaseService(),
       _auth = auth ?? AuthService();
 
@@ -291,7 +291,7 @@ class DatabaseProvider extends ChangeNotifier {
         await _db.followUserInFirebase(targetUserId);
         await loadUserFollowers(currentUserId);
         await loadUserFollowing(currentUserId);
-        await loadFollowingPosts(); // Add this line to refresh following posts
+        await loadFollowingPosts(); 
       } catch (e) {
         _followers[targetUserId]?.remove(currentUserId);
         _followerCount[targetUserId] = (_followerCount[targetUserId] ?? 0) - 1;

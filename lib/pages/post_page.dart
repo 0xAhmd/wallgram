@@ -4,7 +4,7 @@ import 'package:wallgram/components/comment_box.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/profile_page.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class PostPage extends StatefulWidget {
   const PostPage({super.key, required this.post});
@@ -15,19 +15,18 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
-  late final listiningDatabaseProvider = Provider.of<DatabaseProvider>(
+  late final listiningDatabaseProvider = Provider.of<AppProvider>(
     context,
     listen: true,
   );
-  late final databaseProvider = Provider.of<DatabaseProvider>(
+  late final databaseProvider = Provider.of<AppProvider>(
     context,
     listen: false,
   );
   @override
   Widget build(BuildContext context) {
-
     final allComments = listiningDatabaseProvider.getComments(widget.post.id);
-    allComments.sort((a, b) => a.timestamp.compareTo(b.timestamp)); 
+    allComments.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     return Scaffold(
       appBar: AppBar(
@@ -63,7 +62,7 @@ class _PostPageState extends State<PostPage> {
               : ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                
+
                 itemCount: allComments.length,
                 itemBuilder: (context, index) {
                   final comment = allComments[index];

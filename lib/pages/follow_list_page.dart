@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
 import 'package:wallgram/models/user_profile_model.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class FollowListPage extends StatefulWidget {
   const FollowListPage({super.key, required this.uid});
@@ -12,8 +12,8 @@ class FollowListPage extends StatefulWidget {
 }
 
 class _FollowListPageState extends State<FollowListPage> {
-  late final listeningProvider = Provider.of<DatabaseProvider>(context);
-  late final databaseProvider = Provider.of<DatabaseProvider>(
+  late final listeningProvider = Provider.of<AppProvider>(context);
+  late final databaseProvider = Provider.of<AppProvider>(
     context,
     listen: false,
   );

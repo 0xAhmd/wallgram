@@ -9,7 +9,7 @@ import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/notification_page.dart';
 import 'package:wallgram/pages/post_page.dart';
 import 'package:wallgram/pages/profile_page.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,7 +19,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late DatabaseProvider dataprovider;
+  late AppProvider dataprovider;
   bool _isInitialized = false;
   bool _isRefreshing = false;
 
@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInitialized) {
-      dataprovider = Provider.of<DatabaseProvider>(context);
+      dataprovider = Provider.of<AppProvider>(context);
       _loadInitialData();
       _isInitialized = true;
     }
@@ -106,7 +106,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    late final listeningProvider = Provider.of<DatabaseProvider>(context);
+    late final listeningProvider = Provider.of<AppProvider>(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
         drawer: MyDrawer(),
         appBar: AppBar(
           actions: [
-            Consumer<DatabaseProvider>(
+            Consumer<AppProvider>(
               builder: (context, provider, _) {
                 final unreadCount =
                     provider.notifications.where((n) => !n['read']).length;

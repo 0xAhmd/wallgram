@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/post_page.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class notificationsPage extends StatelessWidget {
   const notificationsPage({super.key});
@@ -20,7 +20,7 @@ class notificationsPage extends StatelessWidget {
           style: TextStyle(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
-          Consumer<DatabaseProvider>(
+          Consumer<AppProvider>(
             builder: (context, provider, _) {
               return IconButton(
                 padding: const EdgeInsets.only(right: 18),
@@ -34,7 +34,7 @@ class notificationsPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<DatabaseProvider>(
+      body: Consumer<AppProvider>(
         builder: (context, provider, _) {
           final unreadNotifications =
               provider.notifications.where((n) => !n['read']).toList();

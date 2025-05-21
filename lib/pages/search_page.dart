@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -15,11 +15,8 @@ class _SearchPageState extends State<SearchPage> {
   final _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    final databaseProvider = Provider.of<DatabaseProvider>(
-      context,
-      listen: false,
-    );
-    final listeningDatabaseProvider = Provider.of<DatabaseProvider>(
+    final databaseProvider = Provider.of<AppProvider>(context, listen: false);
+    final listeningDatabaseProvider = Provider.of<AppProvider>(
       context,
       listen: true,
     );

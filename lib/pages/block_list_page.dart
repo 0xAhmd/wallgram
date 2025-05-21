@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import 'package:wallgram/services/database/database_provider.dart';
+import 'package:wallgram/services/database/app_provider.dart';
 
 class BlockListPage extends StatefulWidget {
   const BlockListPage({super.key});
@@ -13,19 +13,19 @@ class BlockListPage extends StatefulWidget {
 }
 
 class _BlockListPageState extends State<BlockListPage> {
-  late DatabaseProvider listeningDatabaseProvider;
-  late DatabaseProvider notListeningDatabaseProvider;
+  late AppProvider listeningDatabaseProvider;
+  late AppProvider notListeningDatabaseProvider;
   bool _isInitialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInitialized) {
-      listeningDatabaseProvider = Provider.of<DatabaseProvider>(
+      listeningDatabaseProvider = Provider.of<AppProvider>(
         context,
         listen: true,
       );
-      notListeningDatabaseProvider = Provider.of<DatabaseProvider>(
+      notListeningDatabaseProvider = Provider.of<AppProvider>(
         context,
         listen: false,
       );
