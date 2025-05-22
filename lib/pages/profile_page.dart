@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -210,6 +212,43 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 25),
 
                     GestureDetector(
+                       onLongPress: () {
+    if (_profileImageUrl != null) {
+      showDialog(
+        context: context,
+        barrierColor: Colors.black.withOpacity(0.5),
+        builder: (context) {
+          return Stack(
+            children: [
+              // Background blur effect
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ),
+              Center(
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Hero(
+                    tag: 'profile-image',
+                    child: ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: _profileImageUrl!,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        height: MediaQuery.of(context).size.width * 0.8,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  },
                       onTap: () async {
                         final pickedFile = await ImageHelper.pickImage();
                         if (pickedFile != null) {
