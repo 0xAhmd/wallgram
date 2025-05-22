@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:wallgram/components/custom_text_field.dart';
 import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
@@ -123,141 +124,175 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder:
-              (context, constraints) => SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 30),
-                        Icon(
-                          Icons.lock_open,
-                          size: 100,
+      body: OfflineBuilder(
+        connectivityBuilder: (
+          BuildContext context,
+          List<ConnectivityResult> connectivity,
+          Widget child,
+        ) {
+          final bool connected =
+              !connectivity.contains(ConnectivityResult.none);
+          if (connected) {
+            return _buildLoginPage();
+          } else {
+            return _buildOfflinePage();
+          }
+        },
+        child: const Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: const LinearProgressIndicator(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOfflinePage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset('assets/offline.gif', width: 132),
+        const Center(
+          child: Text('No internet connection', style: TextStyle(fontSize: 23)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginPage() {
+    return SafeArea(
+      child: LayoutBuilder(
+        builder:
+            (context, constraints) => SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 30),
+                      Icon(
+                        Icons.lock_open,
+                        size: 100,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Welcome Back, you\'ve been missed',
+                        style: TextStyle(
+                          fontSize: 19,
                           color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Welcome Back, you\'ve been missed',
-                          style: TextStyle(
-                            fontSize: 19,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: _emailController,
-                          hintText: 'Enter your Email',
-                          icon: Icons.email,
-                          obscureText: false,
-                        ),
-                        const SizedBox(height: 12),
-                        CustomTextField(
-                          controller: _passwordController,
-                          hintText: 'Enter your Password',
-                          icon: Icons.password,
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 25),
-                        MyCustomButton(text: 'Login', onPressed: login),
-                        const SizedBox(height: 18),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ForgotPwPage(),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 18),
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                "Forgot Password?",
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
+                      ),
+                      const SizedBox(height: 20),
+                      CustomTextField(
+                        controller: _emailController,
+                        hintText: 'Enter your Email',
+                        icon: Icons.email,
+                        obscureText: false,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        controller: _passwordController,
+                        hintText: 'Enter your Password',
+                        icon: Icons.password,
+                        obscureText: true,
+                      ),
+                      const SizedBox(height: 25),
+                      MyCustomButton(text: 'Login', onPressed: login),
+                      const SizedBox(height: 18),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPwPage(),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Don\'t have an account?',
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "Forgot Password?",
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 17,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
-                            const SizedBox(width: 2),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  RegisterPage.routeName,
-                                );
-                              },
-                              child: Text(
-                                'Sign Up',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                color: Colors.grey[400],
-                                thickness: 0.5,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Don\'t have an account?',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                RegisterPage.routeName,
+                              );
+                            },
+                            child: Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10.0,
-                              ),
-                              child: Text(
-                                'Or Sign in With',
-                                style: TextStyle(color: Colors.grey[700]),
-                              ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey[400],
+                              thickness: 0.5,
                             ),
-                            Expanded(
-                              child: Divider(
-                                color: Colors.grey[400],
-                                thickness: 0.5,
-                              ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        CustomSquareTile(
-                          img: 'assets/google.png',
-                          onTap: () => _signInWithGoogle(context),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
+                            child: Text(
+                              'Or Sign in With',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey[400],
+                              thickness: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      CustomSquareTile(
+                        img: 'assets/google.png',
+                        onTap: () => _signInWithGoogle(context),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
               ),
-        ),
+            ),
       ),
     );
   }
