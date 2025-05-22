@@ -4,24 +4,27 @@ import 'package:wallgram/models/user_profile_model.dart';
 class UserService {
   final db = FirebaseFirestore.instance;
 
-  Future<void> saveUserInfoInFirebase({
-    required String uid,
-    required String name,
-    required String email,
-  }) async {
-    String username = email.split('@')[0];
+ Future<void> saveUserInfoInFirebase({
+  required String uid,
+  required String name,
+  required String email,
+  String? imageUrl, // <-- optional image URL
+}) async {
+  String username = email.split('@')[0];
 
-    UserProfile user = UserProfile(
-      name: name,
-      email: email,
-      uid: uid,
-      username: username,
-      bio: '',
-    );
+  UserProfile user = UserProfile(
+    name: name,
+    email: email,
+    uid: uid,
+    username: username,
+    bio: '',
+    profileImage: imageUrl, // <-- include the image
+  );
 
-    final userMap = user.toMap();
-    await db.collection('users').doc(uid).set(userMap);
-  }
+  final userMap = user.toMap();
+  await db.collection('users').doc(uid).set(userMap);
+}
+
 
   Future<UserProfile?> getUserFromFirebase(String uid) async {
     try {

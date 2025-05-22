@@ -9,6 +9,7 @@ environment:
   sdk: ^3.7.2
 
 dependencies:
+  cached_network_image: ^3.4.1
   cloud_firestore: ^5.6.7
   connectivity_plus: ^6.1.4
   cupertino_icons: ^1.0.8
@@ -27,13 +28,17 @@ dependencies:
   google_sign_in: ^6.3.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  image_picker: ^1.1.2
   intl: ^0.19.0
+  mime: ^2.0.0
   package_info_plus: ^8.3.0
+  path: ^1.9.1
   path_provider: ^2.1.5
   provider: ^6.1.5
   quickalert: ^1.1.0
   shared_preferences: ^2.5.3
   shimmer: ^3.0.0
+  supabase_flutter: ^2.9.0
   url_launcher: ^6.3.1
 
 dev_dependencies:

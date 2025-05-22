@@ -431,6 +431,8 @@ bool isSearching = false;
     }
   }
 
+  
+
   List<Map<String, dynamic>> _notifications = [];
   List<Map<String, dynamic>> get notifications => _notifications;
 

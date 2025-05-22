@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
@@ -7,10 +8,12 @@ import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/components/profile_stats.dart';
 import 'package:wallgram/components/shimmers/profile_page_shimmer.dart';
 import 'package:wallgram/helper/global_banner.dart';
+import 'package:wallgram/helper/image_picker.dart';
 import 'package:wallgram/helper/navigator.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/pages/follow_list_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
+import 'package:wallgram/services/database/supabase_storage_service.dart';
 import 'package:wallgram/services/provider/app_provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -28,6 +31,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isloading = true;
   bool isFollowing = false;
   bool isTogglingFollow = false;
+  String? _profileImageUrl; // <-- Track image URL
 
   @override
   void initState() {
@@ -66,6 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
         );
         user = await databaseProvider.userProfile(widget.uid);
       }
+      _profileImageUrl = user?.profileImage;
     } catch (e) {
       debugPrint('Error loading user: $e');
     } finally {
@@ -177,136 +182,192 @@ class _ProfilePageState extends State<ProfilePage> {
           foregroundColor: Theme.of(context).colorScheme.primary,
         ),
       ),
-      body: isloading
-    ? const SingleChildScrollView(child: Padding(
-        padding: EdgeInsets.all(16),
-        child: ProfilePageShimmer(),
-      ))
-    : RefreshIndicator(
-        color: Theme.of(context).colorScheme.primary,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        onRefresh: _refreshData,
-        child: ListView(
-          children: [
-            Center(
-              child: Text(
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Theme.of(context).colorScheme.primary,
+      body:
+          isloading
+              ? const SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: ProfilePageShimmer(),
                 ),
-                isloading ? 'Loading...' : '@${user?.username ?? 'user'}',
-              ),
-            ),
-            const SizedBox(height: 25),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(25),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-                child: Icon(
-                  Icons.person,
-                  size: 100,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // stats
-            Consumer<AppProvider>(
-              builder: (context, databaseProvider, child) {
-                return ProfileStats(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FollowListPage(uid: widget.uid),
-                      ),
-                    );
-                  },
-                  postCount: userPosts.length,
-                  followerCount: databaseProvider.getFollowerCount(widget.uid),
-                  followingCount: databaseProvider.getFollowingCount(
-                    widget.uid,
-                  ),
-                );
-              },
-            ),
-            // Follow button
-            const SizedBox(height: 8),
-            if (user != null && user!.uid != currentUserId)
-              CustomFollowButton(
-                isFollowing: isFollowing,
-                isLoading: isTogglingFollow,
-                onPressed: isTogglingFollow ? null : _toggleFollow,
-              ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 25),
-                  child: Text(
-                    'Bio',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            currentUserId == widget.uid
-                ? GestureDetector(
-                  onTap: _showEditBioBox,
-                  child: MyBioBox(
-                    text:
+              )
+              : RefreshIndicator(
+                color: Theme.of(context).colorScheme.primary,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                onRefresh: _refreshData,
+                child: ListView(
+                  children: [
+                    Center(
+                      child: Text(
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         isloading
                             ? 'Loading...'
-                            : user!.bio.isEmpty
-                            ? 'No Bio Set'
-                            : user!.bio,
-                  ),
-                )
-                : MyBioBox(
-                  text:
-                      isloading
-                          ? 'Loading...'
-                          : user!.bio.isEmpty
-                          ? 'No Bio Set'
-                          : user!.bio,
-                ),
-            Padding(
-              padding: const EdgeInsets.only(top: 6.0, left: 25),
-              child: Text(
-                'Posts',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Theme.of(context).colorScheme.primary,
+                            : '@${user?.username ?? 'user'}',
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+
+                    GestureDetector(
+                      onTap: () async {
+                        final pickedFile = await ImageHelper.pickImage();
+                        if (pickedFile != null) {
+                          final imageUrl =
+                              await SupabaseStorageService.uploadImageAndSaveToFirestore(
+                                file: pickedFile,
+                                uid: widget.uid,
+                              );
+
+                          if (imageUrl != null) {
+                            print('Uploaded to Supabase: $imageUrl');
+
+                            // ✅ Force rebuild to reflect new image
+                            setState(() {
+                              _profileImageUrl =
+                                  imageUrl; // Assuming you're tracking image URL in state
+                            });
+                          }
+                        }
+                      },
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          child:
+                              _profileImageUrl != null
+                                  ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: CachedNetworkImage(
+                                      imageUrl: _profileImageUrl!,
+                                      width: 150,
+                                      height: 150,
+                                      fit: BoxFit.cover,
+                                      placeholder:
+                                          (context, url) =>
+                                              const CircularProgressIndicator(),
+                                      errorWidget:
+                                          (context, url, error) => Icon(
+                                            Icons.person,
+                                            size: 100,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                          ),
+                                    ),
+                                  )
+                                  : Icon(
+                                    Icons.person,
+                                    size: 100,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // stats
+                    Consumer<AppProvider>(
+                      builder: (context, databaseProvider, child) {
+                        return ProfileStats(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        FollowListPage(uid: widget.uid),
+                              ),
+                            );
+                          },
+                          postCount: userPosts.length,
+                          followerCount: databaseProvider.getFollowerCount(
+                            widget.uid,
+                          ),
+                          followingCount: databaseProvider.getFollowingCount(
+                            widget.uid,
+                          ),
+                        );
+                      },
+                    ),
+                    // Follow button
+                    const SizedBox(height: 8),
+                    if (user != null && user!.uid != currentUserId)
+                      CustomFollowButton(
+                        isFollowing: isFollowing,
+                        isLoading: isTogglingFollow,
+                        onPressed: isTogglingFollow ? null : _toggleFollow,
+                      ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 25),
+                          child: Text(
+                            'Bio',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    currentUserId == widget.uid
+                        ? GestureDetector(
+                          onTap: _showEditBioBox,
+                          child: MyBioBox(
+                            text:
+                                isloading
+                                    ? 'Loading...'
+                                    : user!.bio.isEmpty
+                                    ? 'No Bio Set'
+                                    : user!.bio,
+                          ),
+                        )
+                        : MyBioBox(
+                          text:
+                              isloading
+                                  ? 'Loading...'
+                                  : user!.bio.isEmpty
+                                  ? 'No Bio Set'
+                                  : user!.bio,
+                        ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6.0, left: 25),
+                      child: Text(
+                        'Posts',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+
+                    userPosts.isEmpty
+                        ? const Center(child: Text('No posts yet'))
+                        : ListView.builder(
+                          itemCount: userPosts.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return PostTile(
+                              post: userPosts[index],
+                              onUserTap: () {},
+                              onPostTap: () {},
+                            );
+                          },
+                        ),
+                  ],
                 ),
               ),
-            ),
-
-            userPosts.isEmpty
-                ? const Center(child: Text('No posts yet'))
-                : ListView.builder(
-                  itemCount: userPosts.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return PostTile(
-                      post: userPosts[index],
-                      onUserTap: () {},
-                      onPostTap: () {},
-                    );
-                  },
-                ),
-          ],
-        ),
-      ),
     );
   }
 }

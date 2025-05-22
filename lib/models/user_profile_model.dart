@@ -6,12 +6,15 @@ class UserProfile {
   String uid;
   String bio;
   String username;
+    String? profileImage; // <-- new field (nullable)
+
   UserProfile({
     required this.name,
     required this.email,
     required this.uid,
     required this.bio,
     required this.username,
+    this.profileImage,
   });
   // firebase -> app {get user profile data from firebase}
   factory UserProfile.fromDocument(DocumentSnapshot doc) {
@@ -22,7 +25,8 @@ class UserProfile {
       email: doc['email'],
       uid: doc.id,
       bio: doc['bio'],
-      username: doc['username'],
+      username: doc['username'],      profileImage: data['profileImage'], // <-- read image URL from Firestore
+
     );
   }
 
@@ -34,7 +38,8 @@ class UserProfile {
       'email': email,
       'uid': uid,
       'bio': bio,
-      'username': username,
+      'username': username,      'profileImage': profileImage, // <-- save image URL to Firestore
+
     };
   }
 }
