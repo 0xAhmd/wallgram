@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/drawer.dart';
 import 'package:wallgram/components/post_tile.dart';
+import 'package:wallgram/components/shimmers/shimmer_post_tile.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/helper/updater.dart';
 import 'package:wallgram/models/post.dart';
@@ -201,16 +202,17 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Widget _buildPostsList(List<Post> posts) {
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      child:
-          _isRefreshing
-              ? const Center(child: CircularProgressIndicator())
-              : posts.isEmpty
-              ? const Center(child: Text('No posts yet'))
-              : ListView.builder(
+Widget _buildPostsList(List<Post> posts) {
+  return RefreshIndicator(
+    onRefresh: _onRefresh,
+    child: _isRefreshing
+        ? ListView.builder(
+            itemCount: 6, // Display 6 shimmer tiles
+            itemBuilder: (context, index) => const PostTileShimmer(),
+          )
+        : posts.isEmpty
+            ? const Center(child: Text('No posts yet'))
+            : ListView.builder(
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
                   final post = posts[index];
@@ -235,6 +237,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
               ),
-    );
-  }
+  );
+}
+
 }

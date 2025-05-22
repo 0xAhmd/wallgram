@@ -5,6 +5,7 @@ import 'package:wallgram/components/custom_follow_button.dart';
 import 'package:wallgram/components/my_bio_box.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/components/profile_stats.dart';
+import 'package:wallgram/components/shimmers/profile_page_shimmer.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/helper/navigator.dart';
 import 'package:wallgram/models/user_profile_model.dart';
@@ -176,7 +177,12 @@ class _ProfilePageState extends State<ProfilePage> {
           foregroundColor: Theme.of(context).colorScheme.primary,
         ),
       ),
-      body: RefreshIndicator(
+      body: isloading
+    ? const SingleChildScrollView(child: Padding(
+        padding: EdgeInsets.all(16),
+        child: ProfilePageShimmer(),
+      ))
+    : RefreshIndicator(
         color: Theme.of(context).colorScheme.primary,
         backgroundColor: Theme.of(context).colorScheme.surface,
         onRefresh: _refreshData,
