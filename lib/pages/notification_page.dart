@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/post_page.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class notificationsPage extends StatelessWidget {
   const notificationsPage({super.key});

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
 import 'package:wallgram/helper/global_banner.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});

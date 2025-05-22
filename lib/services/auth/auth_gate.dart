@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/pages/home_page.dart';
 import 'package:wallgram/pages/login_page.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});

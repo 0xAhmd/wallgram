@@ -10,7 +10,7 @@ import 'package:wallgram/helper/arabic_detector.dart';
 import 'package:wallgram/helper/time_stamp_handler.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class PostTile extends StatefulWidget {
   const PostTile({

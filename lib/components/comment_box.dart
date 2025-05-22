@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class CommentBox extends StatelessWidget {
   const CommentBox({

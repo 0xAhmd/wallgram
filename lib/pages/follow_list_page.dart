@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/models/user_profile_model.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class FollowListPage extends StatefulWidget {
   const FollowListPage({super.key, required this.uid});

@@ -10,7 +10,7 @@ import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/notification_page.dart';
 import 'package:wallgram/pages/post_page.dart';
 import 'package:wallgram/pages/profile_page.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

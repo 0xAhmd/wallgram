@@ -10,7 +10,7 @@ import 'package:wallgram/helper/navigator.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/pages/follow_list_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
-import 'package:wallgram/services/database/app_provider.dart';
+import 'package:wallgram/services/provider/app_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.uid});
