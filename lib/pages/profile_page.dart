@@ -5,6 +5,7 @@ import 'package:wallgram/components/custom_follow_button.dart';
 import 'package:wallgram/components/my_bio_box.dart';
 import 'package:wallgram/components/post_tile.dart';
 import 'package:wallgram/components/profile_stats.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/helper/navigator.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/pages/follow_list_page.dart';
@@ -25,7 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late String currentUserId;
   bool isloading = true;
   bool isFollowing = false;
-  bool isTogglingFollow = false; 
+  bool isTogglingFollow = false;
 
   @override
   void initState() {
@@ -158,21 +159,22 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final userPosts = Provider.of<AppProvider>(context).userPosts(widget.uid);
- 
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => goHomePage(context),
-          icon: const Icon(Icons.arrow_back),
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => goHomePage(context),
+            icon: const Icon(Icons.arrow_back),
+          ),
+          centerTitle: true,
+          title: Text(
+            style: const TextStyle(fontSize: 25),
+            isloading ? 'Loading...' : user?.name ?? 'Profile',
+          ),
+          foregroundColor: Theme.of(context).colorScheme.primary,
         ),
-        centerTitle: true,
-        title: Text(
-          style: const TextStyle(fontSize: 25),
-          isloading ? 'Loading...' : user?.name ?? 'Profile',
-        ),
-        foregroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.primary,

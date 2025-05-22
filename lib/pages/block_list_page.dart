@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/services/database/app_provider.dart';
 
 class BlockListPage extends StatefulWidget {
@@ -58,10 +59,12 @@ class _BlockListPageState extends State<BlockListPage> {
     final blockedUsers = listeningDatabaseProvider.blockedUsers;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Blocked Users', style: TextStyle(fontSize: 24)),
-        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Blocked Users', style: TextStyle(fontSize: 24)),
+          foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+        ),
       ),
       body:
           blockedUsers.isEmpty

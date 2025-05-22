@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/comment_box.dart';
 import 'package:wallgram/components/post_tile.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/profile_page.dart';
 import 'package:wallgram/services/database/app_provider.dart';
@@ -29,10 +30,12 @@ class _PostPageState extends State<PostPage> {
     allComments.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.post.username),
-        centerTitle: true,
-        foregroundColor: Theme.of(context).colorScheme.primary,
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          title: Text(widget.post.username),
+          centerTitle: true,
+          foregroundColor: Theme.of(context).colorScheme.primary,
+        ),
       ),
       body: ListView(
         children: [

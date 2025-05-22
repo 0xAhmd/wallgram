@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/custom_text_field.dart';
+import 'package:wallgram/helper/global_banner.dart';
 
 class ForgotPwPage extends StatefulWidget {
   const ForgotPwPage({super.key});
@@ -57,7 +58,7 @@ class _ForgotPwPageState extends State<ForgotPwPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(),
+      appBar: GlobalAppBarWrapper(appBar: AppBar()),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),

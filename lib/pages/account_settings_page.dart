@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 
 class AccountSettingsPage extends StatelessWidget {
@@ -29,9 +30,11 @@ class AccountSettingsPage extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Account Settings', style: TextStyle(fontSize: 25)),
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Account Settings', style: TextStyle(fontSize: 25)),
+        ),
       ),
 
       body: Column(

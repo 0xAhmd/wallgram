@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/post_page.dart';
 import 'package:wallgram/services/database/app_provider.dart';
@@ -13,7 +14,7 @@ class notificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlobalAppBarWrapper(appBar: AppBar(
         centerTitle: true,
         title: Text(
           'N O T I F I C A T I O N S',
@@ -33,7 +34,7 @@ class notificationsPage extends StatelessWidget {
             },
           ),
         ],
-      ),
+      )),
       body: Consumer<AppProvider>(
         builder: (context, provider, _) {
           final unreadNotifications =

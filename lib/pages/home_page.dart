@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/drawer.dart';
 import 'package:wallgram/components/post_tile.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/helper/updater.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/pages/notification_page.dart';
@@ -100,7 +101,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppUpdater.checkForUpdate(context); // Single added line
+      AppUpdater.checkForUpdate(context);
     });
   }
 
@@ -116,77 +117,79 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         drawer: MyDrawer(),
-        appBar: AppBar(
-          actions: [
-            Consumer<AppProvider>(
-              builder: (context, provider, _) {
-                final unreadCount =
-                    provider.notifications.where((n) => !n['read']).length;
+        appBar: GlobalAppBarWrapper(
+          appBar: AppBar(
+            actions: [
+              Consumer<AppProvider>(
+                builder: (context, provider, _) {
+                  final unreadCount =
+                      provider.notifications.where((n) => !n['read']).length;
 
-                return GestureDetector(
-                  onTap:
-                      () => Navigator.pushNamed(
-                        context,
-                        notificationsPage.routeName,
-                      ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Padding(
-                        padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(FontAwesomeIcons.bell, size: 24),
-                      ),
-                      if (unreadCount > 0)
-                        Positioned(
-                          right: 10,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 20,
-                              minHeight: 20,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$unreadCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                  return GestureDetector(
+                    onTap:
+                        () => Navigator.pushNamed(
+                          context,
+                          notificationsPage.routeName,
+                        ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: const Icon(FontAwesomeIcons.bell, size: 24),
+                        ),
+                        if (unreadCount > 0)
+                          Positioned(
+                            right: 10,
+                            top: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 20,
+                                minHeight: 20,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$unreadCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                );
-              },
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+            bottom: TabBar(
+              labelColor: Theme.of(context).colorScheme.primary,
+              unselectedLabelColor: Theme.of(context).colorScheme.primary,
+              dividerColor: Colors.transparent,
+              labelStyle: const TextStyle(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w500,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 15,
+                fontStyle: FontStyle.italic,
+              ),
+              tabs: const [Tab(text: 'For you'), Tab(text: 'Following')],
+              indicatorColor: Theme.of(context).colorScheme.secondary,
             ),
-          ],
-          bottom: TabBar(
-            labelColor: Theme.of(context).colorScheme.primary,
-            unselectedLabelColor: Theme.of(context).colorScheme.primary,
-            dividerColor: Colors.transparent,
-            labelStyle: const TextStyle(
-              fontSize: 16,
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w500,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 15,
-              fontStyle: FontStyle.italic,
-            ),
-            tabs: const [Tab(text: 'For you'), Tab(text: 'Following')],
-            indicatorColor: Theme.of(context).colorScheme.secondary,
+            foregroundColor: Theme.of(context).colorScheme.primary,
+            centerTitle: true,
+            title: const Text('H O M E'),
           ),
-          foregroundColor: Theme.of(context).colorScheme.primary,
-          centerTitle: true,
-          title: const Text('H O M E'),
         ),
 
         body: TabBarView(

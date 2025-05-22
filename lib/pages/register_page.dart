@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wallgram/components/loading_indicator.dart';
 import 'package:wallgram/components/my_custom_button.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/pages/login_page.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
 import 'package:wallgram/services/database/index.dart';
@@ -106,7 +107,8 @@ class _RegisterPageState extends State<RegisterPage> {
         _emailController.text.trim(),
         _passwordController.text,
       );
-      await _userService.saveUserInfoInFirebase(uid:  _auth.currentUser.uid,
+      await _userService.saveUserInfoInFirebase(
+        uid: _auth.currentUser.uid,
         name: _usernameController.text.trim(),
         email: _emailController.text.trim(),
       );
@@ -165,6 +167,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
     return Scaffold(
+      appBar: GlobalAppBarWrapper(appBar: AppBar()),
+
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Form(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/services/database/app_provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -22,27 +23,30 @@ class _SearchPageState extends State<SearchPage> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Search users',
-            hintStyle: TextStyle(
-              fontSize: 20,
-              color: Theme.of(context).colorScheme.primary,
-              fontStyle: FontStyle.italic,
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          title: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search users',
+              hintStyle: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.primary,
+                fontStyle: FontStyle.italic,
+              ),
+              border: InputBorder.none,
             ),
-            border: InputBorder.none,
+            onChanged: (value) {
+              if (value.isNotEmpty) {
+                databaseProvider.searchUsers(value.trim());
+              } else {
+                databaseProvider.searchUsers('');
+              }
+            },
           ),
-          onChanged: (value) {
-            if (value.isNotEmpty) {
-              databaseProvider.searchUsers(value.trim());
-            } else {
-              databaseProvider.searchUsers('');
-            }
-          },
         ),
       ),
+
       backgroundColor: Theme.of(context).colorScheme.surface,
       body:
           _searchController.text.isEmpty

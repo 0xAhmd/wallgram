@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/settings_list_tile.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/pages/account_settings_page.dart';
 import 'package:wallgram/pages/block_list_page.dart';
 import 'package:wallgram/themes/theme_provider.dart';
@@ -10,41 +11,42 @@ class SettingsPage extends StatelessWidget {
 
   void _showThemeSelector(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     showModalBottomSheet(
       context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RadioListTile<ThemeMode>(
-            title: const Text('System Default'),
-            value: ThemeMode.system,
-            groupValue: themeProvider.themeMode,
-            onChanged: (value) {
-              themeProvider.setThemeMode(value!);
-              Navigator.pop(context);
-            },
+      builder:
+          (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<ThemeMode>(
+                title: const Text('System Default'),
+                value: ThemeMode.system,
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  themeProvider.setThemeMode(value!);
+                  Navigator.pop(context);
+                },
+              ),
+              RadioListTile<ThemeMode>(
+                title: const Text('Light Mode'),
+                value: ThemeMode.light,
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  themeProvider.setThemeMode(value!);
+                  Navigator.pop(context);
+                },
+              ),
+              RadioListTile<ThemeMode>(
+                title: const Text('Dark Mode'),
+                value: ThemeMode.dark,
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  themeProvider.setThemeMode(value!);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
           ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Light Mode'),
-            value: ThemeMode.light,
-            groupValue: themeProvider.themeMode,
-            onChanged: (value) {
-              themeProvider.setThemeMode(value!);
-              Navigator.pop(context);
-            },
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Dark Mode'),
-            value: ThemeMode.dark,
-            groupValue: themeProvider.themeMode,
-            onChanged: (value) {
-              themeProvider.setThemeMode(value!);
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
     );
   }
 
@@ -53,12 +55,15 @@ class SettingsPage extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('S E T T I N G S', style: TextStyle(fontSize: 26)),
-        foregroundColor: Theme.of(context).colorScheme.primary,
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('S E T T I N G S', style: TextStyle(fontSize: 26)),
+          foregroundColor: Theme.of(context).colorScheme.primary,
+        ),
       ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+
       body: Column(
         children: [
           GestureDetector(
@@ -80,7 +85,7 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           // Keep other list tiles
-           GestureDetector(
+          GestureDetector(
             onTap: () {
               Navigator.pushNamed(context, BlockListPage.routeName);
             },

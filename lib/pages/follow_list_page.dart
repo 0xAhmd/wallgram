@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
+import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/database/app_provider.dart';
 
@@ -41,14 +42,16 @@ class _FollowListPageState extends State<FollowListPage> {
       length: 2,
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        appBar: AppBar(
-          foregroundColor: Theme.of(context).colorScheme.primary,
-          bottom: TabBar(
-            labelColor: Theme.of(context).colorScheme.primary,
-            unselectedLabelColor: Theme.of(context).colorScheme.primary,
-            dividerColor: Colors.transparent,
-            tabs: const [Tab(text: 'Followers'), Tab(text: 'Following')],
-            indicatorColor: Theme.of(context).colorScheme.secondary,
+        appBar: GlobalAppBarWrapper(
+          appBar: AppBar(
+            foregroundColor: Theme.of(context).colorScheme.primary,
+            bottom: TabBar(
+              labelColor: Theme.of(context).colorScheme.primary,
+              unselectedLabelColor: Theme.of(context).colorScheme.primary,
+              dividerColor: Colors.transparent,
+              tabs: const [Tab(text: 'Followers'), Tab(text: 'Following')],
+              indicatorColor: Theme.of(context).colorScheme.secondary,
+            ),
           ),
         ),
         body: TabBarView(
