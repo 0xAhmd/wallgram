@@ -19,6 +19,7 @@ dependencies:
   firebase_messaging: ^15.2.5
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.2.1
   flutter_linkify: ^6.0.0
   flutter_local_notifications: ^19.2.1
   flutter_offline: ^5.0.0
@@ -68,3 +69,4 @@ flutter:
 
   assets:
     - assets/
+    - .env
