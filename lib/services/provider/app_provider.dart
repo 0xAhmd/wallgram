@@ -6,11 +6,14 @@ import 'package:wallgram/models/comment.dart';
 import 'package:wallgram/models/post.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/auth/auth_service.dart';
+import 'package:wallgram/services/cache/caching_service.dart';
 import 'package:wallgram/services/database/database_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final DatabaseService _db;
   final AuthService _auth;
+  final CacheService _cacheService = CacheService(); // Add this line
+
 
   AppProvider({DatabaseService? db, AuthService? auth})
     : _db = db ?? DatabaseService(),
@@ -66,23 +69,33 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadAllPosts() async {
-    try {
-      final allPosts = await _db.getAllPostsFromFirebase();
-      final blockedUsers = await _db.getBlockedUsersUidsFromFirebase();
-      posts =
-          allPosts.where((post) => !blockedUsers.contains(post.uid)).toList();
+ Future<void> loadAllPosts() async {
+  try {
+    // Step 1: Load from cache immediately
+    posts = _cacheService.getCachedPosts();
+Future.microtask(() {
+  notifyListeners();
+});final cached = await _cacheService.getCachedPosts();
+debugPrint('Loaded ${cached.length} posts from cache');
 
-      loadFollowingPosts();
+    // Step 2: Load fresh posts from Firebase
+    final allPosts = await _db.getAllPostsFromFirebase();
+    final blockedUsers = await _db.getBlockedUsersUidsFromFirebase();
 
-      notifyListeners();
+    posts = allPosts.where((post) => !blockedUsers.contains(post.uid)).toList();
 
-      initializeLikesMap();
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error loading posts: $e');
-    }
+    // Step 3: Cache the updated posts
+    await _cacheService.cachePosts(posts);
+
+    // Step 4: Proceed as normal
+    loadFollowingPosts();
+    initializeLikesMap();
+    notifyListeners();
+
+  } catch (e) {
+    debugPrint('Error loading posts: $e');
   }
+}
 
   Future<void> loadFollowingPosts() async {
     try {

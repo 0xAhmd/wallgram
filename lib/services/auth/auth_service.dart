@@ -96,7 +96,6 @@ class AuthService {
     return null;
   }
 
-  // Example usage for UserService methods that need currentUserId:
   Future<void> saveUserInfo(String name, String email) async {
     await _userService.saveUserInfoInFirebase(
       uid: currentUser.uid,
@@ -109,5 +108,4 @@ class AuthService {
     await _userService.blockUserInFirebase(currentUser.uid, userId);
   }
 
-  // similarly for other methods...
 }

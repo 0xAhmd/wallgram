@@ -49,7 +49,7 @@ class PostService{
         message: message,
         name: user.name,
         username: user.username,
-        timestamp: Timestamp.now(),
+        timestamp: DateTime.now(),
         likes: 0,
         likedBy: [],
       );
