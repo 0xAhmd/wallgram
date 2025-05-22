@@ -404,8 +404,11 @@ debugPrint('Loaded ${cached.length} posts from cache');
 
   List<UserProfile> _searchResult = [];
   List<UserProfile> get searchResult => _searchResult;
+bool isSearching = false;
 
   Future<void> searchUsers(String searchTerm) async {
+      isSearching = true;
+  notifyListeners();
     try {
       final querySnapshot =
           await FirebaseFirestore.instance.collection('users').get();
@@ -420,6 +423,8 @@ debugPrint('Loaded ${cached.length} posts from cache');
               .toList();
 
       _searchResult = results;
+        isSearching = false;
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error searching users: $e');

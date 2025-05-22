@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:wallgram/components/shimmers/blocked_users_shimmer.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/services/provider/app_provider.dart';
 
@@ -17,7 +18,7 @@ class _BlockListPageState extends State<BlockListPage> {
   late AppProvider listeningDatabaseProvider;
   late AppProvider notListeningDatabaseProvider;
   bool _isInitialized = false;
-
+  bool isLoading = true;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -36,7 +37,9 @@ class _BlockListPageState extends State<BlockListPage> {
   }
 
   void loadBlockedUsers() async {
+    setState(() => isLoading = true);
     await listeningDatabaseProvider.loadBlockedUsers();
+    if (mounted) setState(() => isLoading = false);
   }
 
   @override
@@ -67,7 +70,9 @@ class _BlockListPageState extends State<BlockListPage> {
         ),
       ),
       body:
-          blockedUsers.isEmpty
+          isLoading
+              ? const BlockedUserShimmer()
+              : blockedUsers.isEmpty
               ? const Center(child: Text("No blocked users"))
               : ListView.builder(
                 itemCount: blockedUsers.length,

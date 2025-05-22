@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
+import 'package:wallgram/components/shimmers/search_page_shimmer.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/services/provider/app_provider.dart';
 
@@ -48,23 +49,25 @@ class _SearchPageState extends State<SearchPage> {
       ),
 
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body:
-          _searchController.text.isEmpty
-              ? const Center(
-                child: Text(
-                  'SEARCH FOR USERS...',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                ),
-              )
-              : listeningDatabaseProvider.searchResult.isEmpty
-              ? const Center(child: Text('No users found'))
-              : ListView.builder(
+     body: _searchController.text.isEmpty
+    ? const Center(
+        child: Text(
+          'SEARCH FOR USERS...',
+          style: TextStyle(fontSize: 18, color: Colors.grey),
+        ),
+      )
+    : listeningDatabaseProvider.isSearching
+        ? const UserSearchShimmer()
+        : listeningDatabaseProvider.searchResult.isEmpty
+            ? const Center(child: Text('No users found'))
+            : ListView.builder(
                 itemCount: listeningDatabaseProvider.searchResult.length,
                 itemBuilder: (context, index) {
                   final user = listeningDatabaseProvider.searchResult[index];
                   return CustomUserListTile(user: user);
                 },
               ),
+
     );
   }
 }

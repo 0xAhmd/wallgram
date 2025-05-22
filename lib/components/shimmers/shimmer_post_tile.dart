@@ -32,7 +32,7 @@ class PostTileShimmer extends StatelessWidget {
             // User row
             Row(
               children: [
-                CircleAvatar(radius: 16, backgroundColor: Colors.white),
+            const    CircleAvatar(radius: 16, backgroundColor: Colors.white),
                 const SizedBox(width: 8),
                 Container(
                   width: 80,

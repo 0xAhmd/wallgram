@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallgram/components/custom_user_list_tile.dart';
+import 'package:wallgram/components/shimmers/follow_list_shimmer.dart';
 import 'package:wallgram/helper/global_banner.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 import 'package:wallgram/services/provider/app_provider.dart';
@@ -18,11 +19,20 @@ class _FollowListPageState extends State<FollowListPage> {
     context,
     listen: false,
   );
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
     loadFollowerList();
     loadFollowingList();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => isLoading = true);
+    await Future.wait([loadFollowerList(), loadFollowingList()]);
+    if (mounted) setState(() => isLoading = false);
   }
 
   Future<void> loadFollowingList() async {
@@ -56,8 +66,12 @@ class _FollowListPageState extends State<FollowListPage> {
         ),
         body: TabBarView(
           children: [
-            _buildUserList(followers, 'No followers..'),
-            _buildUserList(following, 'No following..'),
+            isLoading
+                ? const FollowListShimmer()
+                : _buildUserList(followers, 'No followers..'),
+            isLoading
+                ? const FollowListShimmer()
+                : _buildUserList(following, 'No following..'),
           ],
         ),
       ),
