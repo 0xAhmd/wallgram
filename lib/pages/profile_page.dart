@@ -220,8 +220,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
 
                           if (imageUrl != null) {
-                            print('Uploaded to Supabase: $imageUrl');
-
                             // ✅ Force rebuild to reflect new image
                             setState(() {
                               _profileImageUrl =

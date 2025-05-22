@@ -35,7 +35,6 @@ class SupabaseStorageService {
 
       return publicUrl;
     } catch (e) {
-      print('Upload or Firestore update failed: $e');
       return null;
     }
   }

@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, empty_catches
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -36,10 +37,36 @@ class _PostTileState extends State<PostTile> {
     context,
     listen: false,
   );
+  String? _profileImageUrl;
+  // ignore: unused_field
+  bool _isLoadingImage = true;
+  Future<void> _loadProfileImage() async {
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.post.uid)
+              .get();
+
+      final data = userDoc.data();
+      if (data != null && data['profileImage'] != null) {
+        setState(() {
+          _profileImageUrl = data['profileImage'];
+        });
+      }
+    } catch (e) {
+    } finally {
+      setState(() {
+        _isLoadingImage = false;
+      });
+    }
+  }
 
   @override
   void initState() {
     _loadComments();
+    _loadProfileImage();
+
     super.initState();
   }
 
@@ -224,11 +251,18 @@ class _PostTileState extends State<PostTile> {
                     child: CircleAvatar(
                       radius: 16,
                       backgroundColor: theme.primary.withOpacity(0.2),
-                      child: Icon(
-                        Icons.person,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      backgroundImage:
+                          _profileImageUrl != null
+                              ? NetworkImage(_profileImageUrl!)
+                              : null,
+                      child:
+                          _profileImageUrl == null
+                              ? Icon(
+                                Icons.person,
+                                size: 18,
+                                color: theme.primary,
+                              )
+                              : null,
                     ),
                   ),
                   const SizedBox(width: 8),
