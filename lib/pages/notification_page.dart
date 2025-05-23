@@ -14,31 +14,42 @@ class notificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GlobalAppBarWrapper(appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          'N O T I F I C A T I O N S',
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
-        ),
-        actions: [
-          Consumer<AppProvider>(
-            builder: (context, provider, _) {
-              return IconButton(
-                padding: const EdgeInsets.only(right: 18),
-                icon: const Icon(Icons.done_all),
-                tooltip: 'Mark all as read',
-                onPressed: () {
-                  provider.markAllNotificationsAsRead();
-                },
-              );
-            },
+      appBar: GlobalAppBarWrapper(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(
+            'N O T I F I C A T I O N S',
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
-        ],
-      )),
+          actions: [
+            Consumer<AppProvider>(
+              builder: (context, provider, _) {
+                return IconButton(
+                  padding: const EdgeInsets.only(right: 18),
+                  icon: const Icon(Icons.done_all),
+                  tooltip: 'Mark all as read',
+                  onPressed: () {
+                    provider.markAllNotificationsAsRead();
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: Consumer<AppProvider>(
         builder: (context, provider, _) {
           final unreadNotifications =
               provider.notifications.where((n) => !n['read']).toList();
+          // if no notifications show empty state
+          if (unreadNotifications.isEmpty) {
+            return const Center(
+              child: Text(
+                'No Body Talked To You (:',
+                style: TextStyle(fontSize: 16),
+              ),
+            );
+          }
 
           return ListView.builder(
             itemCount: unreadNotifications.length,

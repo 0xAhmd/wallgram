@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/custom_follow_button.dart';
 import 'package:wallgram/components/my_bio_box.dart';
@@ -212,44 +213,71 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 25),
 
                     GestureDetector(
-                       onLongPress: () {
-    if (_profileImageUrl != null) {
-      showDialog(
-        context: context,
-        barrierColor: Colors.black.withOpacity(0.5),
-        builder: (context) {
-          return Stack(
-            children: [
-              // Background blur effect
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  color: Colors.black.withOpacity(0.3),
-                ),
-              ),
-              Center(
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Hero(
-                    tag: 'profile-image',
-                    child: ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: _profileImageUrl!,
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        height: MediaQuery.of(context).size.width * 0.8,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-    }
-  },
+                      onLongPress: () {
+                        if (_profileImageUrl != null) {
+                          showDialog(
+                            barrierDismissible: true,
+                            context: context,
+                            barrierColor: Colors.black.withOpacity(0.5),
+                            builder: (context) {
+                              return Stack(
+                                children: [
+                                  // Background blur effect
+                                  BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 10,
+                                      sigmaY: 10,
+                                    ),
+                                    child: Container(
+                                      color: Colors.black.withOpacity(0.3),
+                                    ),
+                                  ),
+                                  Center(
+                                    child: GestureDetector(
+                                      onTap: () => Navigator.of(context).pop(),
+                                      child: Hero(
+                                        tag: 'profile-image',
+                                        child: ClipOval(
+                                          child: CachedNetworkImage(
+                                            imageUrl: _profileImageUrl!,
+                                            width:
+                                                MediaQuery.of(
+                                                  context,
+                                                ).size.width *
+                                                0.8,
+                                            height:
+                                                MediaQuery.of(
+                                                  context,
+                                                ).size.width *
+                                                0.8,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      },
                       onTap: () async {
+                        final currentUserId =
+                            Supabase.instance.client.auth.currentUser?.id;
+
+                        if (widget.uid != currentUserId) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Niqqa you can’t change someone else’s profile photo.",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
                         final pickedFile = await ImageHelper.pickImage();
                         if (pickedFile != null) {
                           final imageUrl =
@@ -259,14 +287,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
 
                           if (imageUrl != null) {
-                            // ✅ Force rebuild to reflect new image
                             setState(() {
-                              _profileImageUrl =
-                                  imageUrl; // Assuming you're tracking image URL in state
+                              _profileImageUrl = imageUrl;
                             });
                           }
                         }
                       },
+
                       child: Center(
                         child: Container(
                           padding: const EdgeInsets.all(10),
