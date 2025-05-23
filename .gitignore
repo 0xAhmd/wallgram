@@ -47,4 +47,3 @@ app.*.map.json
 firebase.json
 
 .env
-replacements.txt
