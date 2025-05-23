@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wallgram/components/custom_bottom_sheet.dart';
 import 'package:wallgram/components/custom_follow_button.dart';
 import 'package:wallgram/components/my_bio_box.dart';
@@ -264,7 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       },
                       onTap: () async {
                         final currentUserId =
-                            Supabase.instance.client.auth.currentUser?.id;
+                            FirebaseAuth.instance.currentUser!.uid;
 
                         if (widget.uid != currentUserId) {
                           ScaffoldMessenger.of(context).showSnackBar(
