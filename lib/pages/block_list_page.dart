@@ -73,7 +73,9 @@ class _BlockListPageState extends State<BlockListPage> {
           isLoading
               ? const BlockedUserShimmer()
               : blockedUsers.isEmpty
-              ? const Center(child: Text("No blocked users"))
+              ? const Center(
+                child: Text("No blocked users", style: TextStyle(fontSize: 18)),
+              )
               : ListView.builder(
                 itemCount: blockedUsers.length,
                 itemBuilder: (context, index) {

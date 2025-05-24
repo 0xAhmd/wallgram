@@ -42,26 +42,30 @@ class _PostTileState extends State<PostTile> {
   // ignore: unused_field
   bool _isLoadingImage = true;
   Future<void> _loadProfileImage() async {
-    try {
-      final userDoc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(widget.post.uid)
-              .get();
+  try {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.post.uid)
+        .get();
 
-      final data = userDoc.data();
-      if (data != null && data['profileImage'] != null) {
-        setState(() {
-          _profileImageUrl = data['profileImage'];
-        });
-      }
-    } catch (e) {
-    } finally {
+    final data = userDoc.data();
+    if (!mounted) return;
+    
+    if (data != null && data['profileImage'] != null) {
       setState(() {
-        _isLoadingImage = false;
+        _profileImageUrl = data['profileImage'];
       });
     }
+  } catch (e) {
+    // handle or log
+  } finally {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingImage = false;
+    });
   }
+}
+
 
   @override
   void initState() {
@@ -147,7 +151,7 @@ class _PostTileState extends State<PostTile> {
                     await Future.delayed(
                       const Duration(milliseconds: 200),
                     ); // let the bottom sheet close
-                    _blockUserConfirmationBox();
+                    _blockUser();
                   },
                 ),
               ],
@@ -190,27 +194,30 @@ class _PostTileState extends State<PostTile> {
     );
   }
 
-  void _blockUserConfirmationBox() {
+  void _blockUser() async {
+  try {
+    await notListeningDatabaseProvider.blockUser(widget.post.uid);
+
+
+    if (!mounted) return;
+
     QuickAlert.show(
-      onConfirmBtnTap: () async {
-        await notListeningDatabaseProvider.blockUser(widget.post.uid);
-
-        Navigator.pop(context);
-
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.success,
-          text: "User blocked successfully",
-        );
-      },
       context: context,
-      type: QuickAlertType.warning,
-      text: "Are you sure you want to block this user?",
-      confirmBtnText: "Yes",
-      showCancelBtn: true,
-      confirmBtnColor: Theme.of(context).colorScheme.primary,
+      type: QuickAlertType.success,
+      text: "@${widget.post.username} blocked successfully.\nThank you!",
+    );
+  } catch (e) {
+    // Optional: show error alert
+    if (!mounted) return;
+
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      text: "Failed to block user. Please try again.",
     );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
