@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, empty_catches
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -15,10 +16,10 @@ import 'package:wallgram/services/provider/app_provider.dart';
 
 class PostTile extends StatefulWidget {
   const PostTile({
-    super.key,
     required this.post,
     required this.onUserTap,
     required this.onPostTap,
+    super.key,
   });
   final Post post;
   final void Function()? onUserTap;
@@ -251,18 +252,43 @@ class _PostTileState extends State<PostTile> {
                     child: CircleAvatar(
                       radius: 16,
                       backgroundColor: theme.primary.withOpacity(0.2),
-                      backgroundImage:
-                          _profileImageUrl != null
-                              ? NetworkImage(_profileImageUrl!)
-                              : null,
-                      child:
-                          _profileImageUrl == null
-                              ? Icon(
-                                Icons.person,
-                                size: 18,
-                                color: theme.primary,
-                              )
-                              : null,
+                      child: ClipOval(
+                        child:
+                            _profileImageUrl != null
+                                ? CachedNetworkImage(
+                                  imageUrl: _profileImageUrl!,
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.cover,
+                                  imageBuilder: (context, imageProvider) {
+                                    return Image(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                  placeholder: (context, url) {
+                                    return const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1.5,
+                                      ),
+                                    );
+                                  },
+                                  errorWidget: (context, url, error) {
+                                    return Icon(
+                                      Icons.person,
+                                      size: 18,
+                                      color: theme.primary,
+                                    );
+                                  },
+                                )
+                                : Icon(
+                                  Icons.person,
+                                  size: 18,
+                                  color: theme.primary,
+                                ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),

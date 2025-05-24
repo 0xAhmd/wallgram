@@ -217,6 +217,7 @@ Widget _buildPostsList(List<Post> posts) {
                 itemBuilder: (context, index) {
                   final post = posts[index];
                   return PostTile(
+                    key: ValueKey(post.id),
                     onPostTap: () {
                       Navigator.push(
                         context,

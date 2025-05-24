@@ -22,7 +22,7 @@ class AppUpdater {
     final snoozedAt = prefs.getInt(_snoozeKey);
     final hasSnoozed = prefs.getBool(_hasSnoozedKey) ?? false;
     final now = DateTime.now().millisecondsSinceEpoch;
-    final oneWeek = Duration(days: 7).inMilliseconds;
+    final oneWeek = const Duration(days: 7).inMilliseconds;
 
     final bool isSnoozed = hasSnoozed && snoozedAt != null && (now - snoozedAt) < oneWeek;
     final bool snoozeExpired = hasSnoozed && snoozedAt != null && (now - snoozedAt) >= oneWeek;
