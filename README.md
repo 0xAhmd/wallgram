@@ -65,11 +65,6 @@ Wallgram uses the following Firebase services:
 
 ## Next Steps (Planned Features)
 1. UI/UX improvements
-2. Caching for user preferences and posts
-3. Additional OAuth providers (GitHub)
-4. Offline functionality
-5. Profile picture uploads
-6. Enhanced error messaging
-7. Password recovery system
+2. Additional OAuth providers (GitHub)
 
 
