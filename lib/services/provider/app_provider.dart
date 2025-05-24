@@ -213,7 +213,9 @@ debugPrint('Loaded ${cached.length} posts from cache');
     }
   }
 
-  Future<void> blockUser(String userId) async {
+  Future<void> blockUser(String userId) async {  
+    
+
     await _db.blockUserInFirebase(userId);
     await loadBlockedUsers();
     await loadAllPosts();

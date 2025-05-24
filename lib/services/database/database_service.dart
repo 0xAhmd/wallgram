@@ -50,11 +50,11 @@ class DatabaseService {
   }
 
   Future<void> blockUserInFirebase(String userId) {
-    return _userService.blockUserInFirebase(userId, _auth.currentUser!.uid);
+    return _userService.blockUserInFirebase(_auth.currentUser!.uid, userId);
   }
 
   Future<void> unBlockUserInFirebase(String userId) {
-    return _userService.unBlockUserInFirebase(userId, _auth.currentUser!.uid);
+    return _userService.unBlockUserInFirebase(_auth.currentUser!.uid, userId);
   }
 
   Future<void> followUserInFirebase(String uid) {

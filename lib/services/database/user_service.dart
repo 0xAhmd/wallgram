@@ -1,30 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:wallgram/models/user_profile_model.dart';
 
 class UserService {
   final db = FirebaseFirestore.instance;
 
- Future<void> saveUserInfoInFirebase({
-  required String uid,
-  required String name,
-  required String email,
-  String? imageUrl, // <-- optional image URL
-}) async {
-  String username = email.split('@')[0];
+  Future<void> saveUserInfoInFirebase({
+    required String uid,
+    required String name,
+    required String email,
+    String? imageUrl, // <-- optional image URL
+  }) async {
+    String username = email.split('@')[0];
 
-  UserProfile user = UserProfile(
-    name: name,
-    email: email,
-    uid: uid,
-    username: username,
-    bio: '',
-    profileImage: imageUrl, // <-- include the image
-  );
+    UserProfile user = UserProfile(
+      name: name,
+      email: email,
+      uid: uid,
+      username: username,
+      bio: '',
+      profileImage: imageUrl, // <-- include the image
+    );
 
-  final userMap = user.toMap();
-  await db.collection('users').doc(uid).set(userMap);
-}
-
+    final userMap = user.toMap();
+    await db.collection('users').doc(uid).set(userMap);
+  }
 
   Future<UserProfile?> getUserFromFirebase(String uid) async {
     try {
@@ -36,12 +36,6 @@ class UserService {
     }
   }
 
-  Future<List<String>> getBlockedUsersUidsFromFirebase(String currentUserId) async {
-    final snapshot =
-        await db.collection('users').doc(currentUserId).collection('blockedUsers').get();
-    return snapshot.docs.map((doc) => doc.id).toList();
-  }
-
   Future<void> updateUserBio(String uid, String bio) async {
     try {
       await db.collection('users').doc(uid).update({'bio': bio});
@@ -49,16 +43,35 @@ class UserService {
     } catch (e) {}
   }
 
+  Future<List<String>> getBlockedUsersUidsFromFirebase(
+    String currentUserId,
+  ) async {
+    final snapshot =
+        await db
+            .collection('users')
+            .doc(currentUserId)
+            .collection('blockedUsers')
+            .get();
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
+
   Future<void> blockUserInFirebase(String currentUserId, String userId) async {
+     debugPrint('Blocking $userId for user $currentUserId');
+
     await db
         .collection('users')
         .doc(currentUserId)
         .collection('blockedUsers')
         .doc(userId)
         .set({});
+
+        
   }
 
-  Future<void> unBlockUserInFirebase(String currentUserId, String blockedUserId) async {
+  Future<void> unBlockUserInFirebase(
+    String currentUserId,
+    String blockedUserId,
+  ) async {
     await db
         .collection('users')
         .doc(currentUserId)
